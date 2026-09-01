@@ -2687,15 +2687,7 @@
                     };
                 <\/script>
             
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(err => {
-      console.warn("PWA: no se pudo registrar el service worker.", err);
-    });
-  });
-}
-</script>
+
 
 </body>
             </html>
@@ -2862,6 +2854,15 @@ if ("serviceWorker" in navigator) {
         }
     }
 
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(err => {
+      console.warn("PWA: no se pudo registrar el service worker.", err);
+    });
+  });
+}
 </script>
 </body>
 </html>
