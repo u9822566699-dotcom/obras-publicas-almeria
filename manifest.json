@@ -1,0 +1,9 @@
+{
+  "name": "Portal de Incidencias y Mantenimiento",
+  "short_name": "Incidencias",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d9251d",
+  "description": "Aplicación web para la gestión de incidencias y mantenimiento."
+}
