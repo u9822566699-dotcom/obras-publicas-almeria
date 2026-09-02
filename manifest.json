@@ -1,6 +1,6 @@
 {
-  "name": "Portal de Incidencias y Mantenimiento",
-  "short_name": "Incidencias",
+  "name": "Sistema de Incidencias Municipales",
+  "short_name": "SIMUN",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
