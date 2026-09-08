@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notificación de Incidencias - Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul</title>
+    <meta name="theme-color" content="#d9251d">
+    <meta name="description" content="SIMUN — Sistema de Incidencias Municipales del Área de Obras Públicas de Almería.">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <title>SIMUN — Sistema de Incidencias Municipales</title>
     
     <!-- Librería para exportación de PDF dinámico si se requiere -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -314,14 +319,6 @@
             .tabla-incidencias th, .tabla-incidencias td { border: 1px solid #999 !important; }
         }
     </style>
-
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#d9251d">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="apple-touch-icon" href="./icon-192.png">
-
 </head>
 <body>
 
@@ -405,6 +402,39 @@
     </div>
 </div>
 
+<!-- V16.5: BANDEJA DE ENTRADA DE INCIDENCIAS NUEVAS -->
+<div id="vista-incidencias-nuevas" class="page-container oculto">
+    <div class="identidad-institucional">
+        <img class="identidad-logo" src="data:image/png;base64,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" alt="Ayuntamiento de Almería">
+        <div class="identidad-texto">
+            <div class="identidad-ayuntamiento">Ayuntamiento de Almería</div>
+            <div class="identidad-area">Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul</div>
+            <div class="identidad-seccion">Sección de Conservación y Mantenimiento</div>
+        </div>
+    </div>
+    <div class="header">
+        <div class="header-title">
+            <h1>Entrada de incidencias nuevas</h1>
+            <h2>CONTROL DE INCORPORACIÓN AL LISTADO</h2>
+        </div>
+        <div class="logo-text">ALMERÍA<span>CIUDAD</span></div>
+    </div>
+
+    <div style="background:#fff8e6; border:1px solid #ffe08a; border-left:5px solid #ffc107; padding:14px 16px; border-radius:6px; margin-bottom:18px;">
+        <strong>🔔 Incidencias pendientes de incorporar</strong>
+        <div style="font-size:12px; color:#6c757d; margin-top:5px;">Esta bandeja muestra todas las incidencias nuevas, sin distinguir entre colegios, asociaciones de vecinos o edificios municipales.</div>
+        <div id="contador-incidencias-nuevas" style="font-size:13px; font-weight:bold; color:#856404; margin-top:8px;">Cargando...</div>
+    </div>
+
+    <div id="lista-incidencias-nuevas" style="display:grid; gap:12px;"></div>
+
+    <div id="zona-entrada-completada" style="display:none; margin-top:20px; text-align:center; padding:18px; background:#e8f5e9; border:1px solid #b7dfba; border-radius:6px;">
+        <strong style="display:block; color:#155724; margin-bottom:6px;">✅ Todas las incidencias nuevas han sido incorporadas.</strong>
+        <span style="display:block; font-size:12px; color:#49604e; margin-bottom:12px;">Ya pueden pasar al panel general y, cuando corresponda, ser visibles para la empresa de su oficio.</span>
+        <button type="button" class="btn-login" style="max-width:320px; margin:auto;" onclick="entrarAlPanelGeneralDesdeEntrada()">Ver panel general de incidencias</button>
+    </div>
+</div>
+
 <!-- VISTA TÉCNICO MUNICIPAL -->
 <div id="vista-tecnico" class="page-container oculto">
     <div class="identidad-institucional">
@@ -436,6 +466,17 @@
         <div style="background:#e8f5e9; border-left:4px solid #28a745; padding:12px; border-radius:4px; text-align:center;">
             <span style="font-size:12px; color:#155724; font-weight:bold;">COMPLETADAS</span>
             <div id="kpi-completadas" style="font-size:22px; font-weight:bold; color:#155724;">0</div>
+        </div>
+    </div>
+
+    <!-- V16.4: trabajos actualmente en curso -->
+    <div id="panel-trabajos-curso" style="background:#f8f9fa; border:1px solid #dee2e6; border-left:4px solid #198754; padding:14px 16px; border-radius:6px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+            <strong style="font-size:14px; color:#343a40;">🛠️ TRABAJOS EN CURSO</strong>
+            <span id="contador-trabajos-curso" style="font-size:12px; color:#6c757d;">0</span>
+        </div>
+        <div id="lista-trabajos-curso" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px;">
+            <div style="font-size:12px; color:#777;">No hay trabajos iniciados.</div>
         </div>
     </div>
 
@@ -494,6 +535,46 @@
                 </tr>
             </thead>
             <tbody id="tabla-tecnico-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- VISTA BRIGADA MUNICIPAL -->
+<div id="vista-brigada" class="page-container oculto">
+    <div class="identidad-institucional">
+        <img class="identidad-logo" src="data:image/png;base64,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" alt="Ayuntamiento de Almería">
+        <div class="identidad-texto">
+            <div class="identidad-ayuntamiento">Ayuntamiento de Almería</div>
+            <div class="identidad-area">Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul</div>
+            <div class="identidad-seccion">Sección de Conservación y Mantenimiento</div>
+        </div>
+    </div>
+    <div class="header">
+        <div class="header-title">
+            <h1>Panel de Brigada Municipal</h1>
+            <h2>TRABAJOS ASIGNADOS A BRIGADA</h2>
+        </div>
+        <div class="logo-text">ALMERÍA<span>CIUDAD</span></div>
+    </div>
+
+    <div class="instructions-box" style="background:#e8f5e9; border-color:#b7dfba; margin-bottom:15px;">
+        <strong>🛠️ Brigada municipal</strong><br>
+        En este panel aparecen únicamente las incidencias que hayan sido asignadas a la Brigada por un técnico municipal o por el administrador.
+    </div>
+
+    <div class="tabla-contenedor">
+        <table class="tabla-incidencias">
+            <thead>
+                <tr>
+                    <th style="width:120px;">Ref / PIN</th>
+                    <th>Centro / Ubicación</th>
+                    <th>Oficio / Trabajo</th>
+                    <th>Responsable / Contacto</th>
+                    <th>Estado / Fechas</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-brigada-body">
             </tbody>
         </table>
     </div>
@@ -837,7 +918,7 @@
 </div>
 
 <script>
-    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbxqOksutoKgAC-nzoS0yaYqD6lVXrwc1Z3fPacmI2dKGV5qBAwsJKueMAP-LQbOUQ6Udg/exec";
+    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbw2DgUnBPLZjhpLvtSwnnc6MA35uyBjG8IflqK0uDmAY2Cslt560nAFwEj68cJfRsZdxQ/exec";
 
     const mapaOficiosUsuarios = {
         "fontaneria": "Fontanería",
@@ -1981,7 +2062,9 @@
         document.getElementById('vista-login').classList.add('oculto');
         document.getElementById('vista-login-entidad').classList.add('oculto');
         document.getElementById('vista-tecnico').classList.add('oculto');
+        document.getElementById('vista-incidencias-nuevas').classList.add('oculto');
         document.getElementById('vista-empresa').classList.add('oculto');
+        document.getElementById('vista-brigada').classList.add('oculto');
     }
 
     function mostrarPortada() {
@@ -2123,11 +2206,13 @@
             actualizarBarraUsuario();
 
             if (usuarioActual.rol === 'ADMIN' || usuarioActual.rol === 'TECNICO') {
-                mostrarPanelTecnico();
+                mostrarBandejaIncidenciasNuevas();
             } else if (usuarioActual.rol === 'EMPRESA') {
                 const asignaciones = usuarioActual.oficios;
                 usuarioActual.oficioAsignado = asignaciones.length === 1 ? asignaciones[0] : '';
                 mostrarPanelEmpresa();
+            } else if (usuarioActual.rol === 'BRIGADA') {
+                mostrarPanelBrigada();
             } else {
                 throw new Error('El rol recibido por el servidor no tiene un panel personal asociado.');
             }
@@ -2341,6 +2426,137 @@
         }
     }
 
+    async function mostrarBandejaIncidenciasNuevas() {
+        ocultarTodasLasVistas();
+        document.getElementById('vista-incidencias-nuevas').classList.remove('oculto');
+        window.scrollTo(0, 0);
+        await cargarIncidenciasNuevas();
+    }
+
+    async function cargarIncidenciasNuevas() {
+        const contenedor = document.getElementById('lista-incidencias-nuevas');
+        const contador = document.getElementById('contador-incidencias-nuevas');
+        const zonaFinal = document.getElementById('zona-entrada-completada');
+        if (!contenedor || !contador || !zonaFinal) return;
+
+        contenedor.innerHTML = '<div style="text-align:center; padding:25px; color:#666;">⏳ Comprobando incidencias nuevas...</div>';
+        zonaFinal.style.display = 'none';
+
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarIncidenciasNuevas',
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+
+            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudieron obtener las incidencias nuevas.');
+
+            const datos = Array.isArray(respuesta.data) ? respuesta.data : [];
+            contador.textContent = datos.length + (datos.length === 1 ? ' incidencia nueva pendiente de incorporación.' : ' incidencias nuevas pendientes de incorporación.');
+            renderizarBandejaIncidenciasNuevas(datos);
+        } catch (err) {
+            contador.textContent = 'No se ha podido comprobar la bandeja de entrada.';
+            contenedor.innerHTML = '<div style="text-align:center; padding:25px; color:#d9251d;">❌ ' + (err.message || err) + '</div>';
+        }
+    }
+
+    function renderizarBandejaIncidenciasNuevas(datos) {
+        const contenedor = document.getElementById('lista-incidencias-nuevas');
+        const zonaFinal = document.getElementById('zona-entrada-completada');
+        const contador = document.getElementById('contador-incidencias-nuevas');
+        if (!contenedor || !zonaFinal || !contador) return;
+
+        const lista = Array.isArray(datos) ? datos : [];
+        contenedor.innerHTML = '';
+
+        if (!lista.length) {
+            contador.textContent = 'No hay incidencias nuevas pendientes de incorporación.';
+            contenedor.innerHTML = '<div style="text-align:center; padding:30px; color:#777; background:#f8f9fa; border:1px solid #dee2e6; border-radius:6px;">No hay incidencias nuevas en este momento.</div>';
+            zonaFinal.style.display = 'block';
+            return;
+        }
+
+        zonaFinal.style.display = 'none';
+        lista.forEach((inc, idx) => {
+            const card = document.createElement('div');
+            card.id = 'incidencia-nueva-' + inc.ref;
+            card.style.cssText = 'background:#fff; border:1px solid #dee2e6; border-left:5px solid #0d6efd; border-radius:6px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,.05);';
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+                    <div>
+                        <div style="font-size:16px; font-weight:bold; color:#343a40;">🆕 ${inc.ref}</div>
+                        <div style="font-size:13px; margin-top:4px; color:#495057;"><strong>Centro:</strong> ${inc.colegio || 'Sin identificar'}</div>
+                        <div style="font-size:13px; margin-top:3px; color:#495057;"><strong>Oficio:</strong> ${inc.oficio || 'Sin indicar'} — <strong>Trabajo:</strong> ${inc.tipo || 'Sin indicar'}</div>
+                        <div style="font-size:12px; margin-top:5px; color:#6c757d;"><strong>Registro:</strong> ${formatearFechaVisible(inc.fechaRegistro)}${inc.direccion ? ' · ' + inc.direccion : ''}</div>
+                    </div>
+                    <div style="text-align:right; font-size:12px; color:#6c757d;">${inc.prioridad === 'URGENTE' ? '🚨 URGENTE' : 'NORMAL'}<br><strong>Estado:</strong> ${inc.estado || 'Pendiente'}</div>
+                </div>
+                <div id="acciones-nueva-${inc.ref}" style="margin-top:13px; display:flex; gap:7px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="btn-accion-tabla" style="background:#0d6efd; color:white;" onclick="incorporarIncidenciaNueva('${inc.ref}')">📥 Incorporar al listado</button>
+                </div>
+            `;
+            contenedor.appendChild(card);
+        });
+    }
+
+    async function incorporarIncidenciaNueva(ref) {
+        const boton = document.querySelector('#acciones-nueva-' + CSS.escape(ref) + ' button');
+        if (boton) { boton.disabled = true; boton.textContent = '⏳ Incorporando...'; }
+
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'incorporarIncidencia',
+                ref: ref,
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+
+            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudo incorporar la incidencia.');
+
+            const card = document.getElementById('incidencia-nueva-' + ref);
+            const acciones = document.getElementById('acciones-nueva-' + ref);
+            if (acciones) {
+                acciones.innerHTML = `
+                    <span style="font-size:12px; font-weight:bold; color:#198754; margin-right:4px;">✅ INCORPORADA AL LISTADO</span>
+                    <button type="button" class="btn-accion-tabla" style="background:#6c757d; color:white;" onclick="cambiarPrioridadTecnico('${ref}', 'URGENTE')">⚡ Hacer Urgente</button>
+                    <button type="button" class="btn-accion-tabla" style="background:#198754; color:white;" onclick="asignarIncidenciaABrigada('${ref}')">🛠️ Brigada</button>
+                `;
+            }
+            if (card) {
+                card.style.borderLeftColor = '#198754';
+                card.style.background = '#f8fff9';
+            }
+
+            // La incidencia queda ya visible para el listado general y para su empresa,
+            // pero la bandeja no se abandona hasta incorporar todas las nuevas.
+            await refrescarContadorEntrada();
+        } catch (err) {
+            if (boton) { boton.disabled = false; boton.textContent = '📥 Incorporar al listado'; }
+            alert('❌ No se pudo incorporar la incidencia.\n\n' + (err.message || err));
+        }
+    }
+
+    async function refrescarContadorEntrada() {
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarIncidenciasNuevas',
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+            const pendientes = Array.isArray(respuesta.data) ? respuesta.data : [];
+            const contador = document.getElementById('contador-incidencias-nuevas');
+            const zonaFinal = document.getElementById('zona-entrada-completada');
+            if (contador) contador.textContent = pendientes.length + (pendientes.length === 1 ? ' incidencia nueva pendiente de incorporación.' : ' incidencias nuevas pendientes de incorporación.');
+            if (pendientes.length === 0 && zonaFinal) {
+                zonaFinal.style.display = 'block';
+                contador.textContent = 'No quedan incidencias nuevas pendientes de incorporación.';
+            }
+        } catch (err) {
+            // La incorporación ya se ha realizado en servidor; no bloqueamos por un fallo visual del contador.
+        }
+    }
+
+    function entrarAlPanelGeneralDesdeEntrada() {
+        mostrarPanelTecnico();
+    }
+
     function mostrarPanelTecnico() {
         ocultarTodasLasVistas();
         cargarTablaTecnicoDesdeSheet();
@@ -2357,6 +2573,7 @@
             if (respuesta.status === "SUCCESS") {
                 todasLasIncidenciasTecnico = ordenarIncidenciasPorPrioridadYFinalizacion(respuesta.data || []);
                 actualizarKpis(todasLasIncidenciasTecnico);
+                renderizarTrabajosEnCurso(todasLasIncidenciasTecnico);
                 renderizarTablaTecnico(todasLasIncidenciasTecnico);
             } else {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ Error al obtener datos.</td></tr>';
@@ -2513,16 +2730,87 @@
                     ${inc.comentarioFinalEmpresa ? `<div style="margin-top:6px; color:#198754;"><strong>Comentario final empresa:</strong><br>${inc.comentarioFinalEmpresa}</div>` : ''}
                     ${inc.comentarioFinalTecnico ? `<div style="margin-top:6px; color:#6f42c1;"><strong>Comentario final técnico:</strong><br>${inc.comentarioFinalTecnico}</div>` : ''}
                 </td>
-                <td>${badgeEstado}</td>
+                <td style="font-size:12px; line-height:1.55;">
+                    ${badgeEstado}
+                    <div style="margin-top:7px; color:#495057;">
+                        <div><strong>Registro:</strong> ${formatearFechaVisible(inc.fechaRegistro)}</div>
+                        <div><strong>Inicio:</strong> ${formatearFechaVisible(inc.fechaInicio)}</div>
+                        <div><strong>Finalización:</strong> ${formatearFechaVisible(inc.fechaFinalizacion)}</div>
+                    </div>
+                </td>
                 <td style="text-align:center;">
                     <button class="btn-accion-tabla" style="background:#6c757d; color:white;" onclick="cambiarPrioridadTecnico('${inc.ref}', '${esUrgente ? 'NORMAL' : 'URGENTE'}')">
                         ${esUrgente ? 'Bajar Prioridad' : '⚡ Hacer Urgente'}
                     </button>
+                    ${!esCompletada ? (String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA'
+                        ? '<div style="margin-top:6px; font-size:12px; font-weight:bold; color:#198754;">🛠️ ASIGNADA A BRIGADA</div>'
+                        : `<button class="btn-accion-tabla" style="background:#198754; color:white; margin-top:6px;" onclick="asignarIncidenciaABrigada('${inc.ref}')">🛠️ Brigada</button>`) : ''}
                     ${botonInforme}
                 </td>
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    function formatearFechaVisible(valor) {
+        if (!valor) return '—';
+        const t = String(valor).trim();
+        const m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (m) return String(m[3]).padStart(2,'0') + '/' + String(m[2]).padStart(2,'0') + '/' + m[1];
+        const n = t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
+        if (n) {
+            let y = n[3];
+            if (y.length === 2) y = '20' + y;
+            return String(n[1]).padStart(2,'0') + '/' + String(n[2]).padStart(2,'0') + '/' + y;
+        }
+        return t;
+    }
+
+    function nombreDestinoIncidencia(inc) {
+        return String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA' ? 'Brigada' : 'Empresa';
+    }
+
+    function renderizarTrabajosEnCurso(datos) {
+        const contenedor = document.getElementById('lista-trabajos-curso');
+        const contador = document.getElementById('contador-trabajos-curso');
+        if (!contenedor || !contador) return;
+
+        const activos = (Array.isArray(datos) ? datos : []).filter(inc => String(inc.estado || '').trim() === 'Inicio');
+        contador.textContent = activos.length + (activos.length === 1 ? ' trabajo' : ' trabajos');
+
+        if (!activos.length) {
+            contenedor.innerHTML = '<div style="font-size:12px; color:#777;">No hay trabajos iniciados.</div>';
+            return;
+        }
+
+        contenedor.innerHTML = activos.map(inc => {
+            const brigada = String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA';
+            const destino = brigada ? 'Brigada' : (inc.empresaAsignada || 'Empresa sin asignar');
+            return `
+                <div style="background:#fff; border:1px solid #e0e0e0; border-radius:5px; padding:9px 10px;">
+                    <div style="font-weight:bold; font-size:13px; color:#343a40;">${inc.oficio || 'Oficio sin indicar'} — ${destino}</div>
+                    <div style="font-size:12px; margin-top:3px; color:#495057;">🏫 ${inc.colegio || 'Centro sin identificar'}</div>
+                    <div style="font-size:11px; margin-top:4px; color:#6c757d;">Inicio: <strong>${formatearFechaVisible(inc.fechaInicio)}</strong></div>
+                </div>`;
+        }).join('');
+    }
+
+    async function asignarIncidenciaABrigada(ref) {
+        if (!confirm('¿Asignar esta incidencia a la Brigada municipal?\n\nEl estado de la incidencia NO cambiará.')) return;
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'asignarBrigada',
+                ref: ref,
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+            if (respuesta.status === 'SUCCESS') {
+                await cargarTablaTecnicoDesdeSheet();
+            } else {
+                alert('❌ No se pudo asignar la incidencia a Brigada.\n\n' + (respuesta.message || 'Error desconocido.'));
+            }
+        } catch (err) {
+            alert('❌ Error de conexión al asignar a Brigada.\n\n' + (err.message || err));
+        }
     }
 
     function filtrarTablaTecnico() {
@@ -2681,13 +2969,73 @@
                     Este documento es un informe oficial emitido por el Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul, a través de la Sección de Conservación y Mantenimiento, del Ayuntamiento de Almería.
                 </div>
 
-
-
-
-</body>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    };
+                <\/script>
+            </body>
             </html>
         `);
         ventanaImpresion.document.close();
+    }
+
+    function mostrarPanelBrigada() {
+        ocultarTodasLasVistas();
+        document.getElementById('vista-brigada').classList.remove('oculto');
+        cargarTablaBrigadaDesdeSheet();
+        window.scrollTo(0, 0);
+    }
+
+    async function cargarTablaBrigadaDesdeSheet() {
+        const tbody = document.getElementById('tabla-brigada-body');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#666;">⏳ Cargando trabajos de Brigada...</td></tr>';
+
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarBrigada',
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+
+            if (respuesta.status !== 'SUCCESS') {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#d9251d;">❌ ' + (respuesta.message || 'No se han podido cargar los trabajos.') + '</td></tr>';
+                return;
+            }
+
+            const datos = ordenarIncidenciasPorPrioridadYFinalizacion(respuesta.data || []);
+            tbody.innerHTML = '';
+
+            if (!datos.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:25px; color:#777;">No hay incidencias asignadas a Brigada.</td></tr>';
+                return;
+            }
+
+            datos.forEach(inc => {
+                const tr = document.createElement('tr');
+                const prioridad = String(inc.prioridad || '').toUpperCase() === 'URGENTE'
+                    ? '<span class="badge badge-urgente">🚨 URGENTE</span>'
+                    : '<span class="badge badge-normal">NORMAL</span>';
+                let estado = '<span class="badge badge-pendiente">PENDIENTE</span>';
+                if (inc.estado === 'Aceptada por la empresa') estado = '<span class="badge badge-aceptada">ACEPTADA</span>';
+                if (inc.estado === 'Inicio') estado = '<span class="badge badge-inicio">EN INICIO</span>';
+                if (inc.estado === 'Completada') estado = '<span class="badge badge-completada">✓ COMPLETADA</span>';
+
+                tr.innerHTML = `
+                    <td><strong>${inc.ref}</strong><br><small style="color:#0d6efd; font-weight:bold;">PIN: ${inc.pin}</small><br>${prioridad}</td>
+                    <td><strong>${inc.colegio || 'Centro sin identificar'}</strong><br><small style="color:#666;">${inc.direccion || ''}</small></td>
+                    <td><strong>${inc.oficio || ''}</strong><br><small style="color:#666;">${inc.tipo || ''}</small></td>
+                    <td><strong>${inc.responsable || ''}</strong><br><small style="color:#0d6efd;">📞 ${inc.telefono || ''}</small><br><small style="color:#555;">${inc.observaciones || 'Sin observaciones.'}</small></td>
+                    <td style="font-size:12px; line-height:1.6;">
+                        ${estado}
+                        <div style="margin-top:7px;"><strong>Registro:</strong> ${formatearFechaVisible(inc.fechaRegistro)}</div>
+                        <div><strong>Inicio:</strong> ${formatearFechaVisible(inc.fechaInicio)}</div>
+                        <div><strong>Finalización:</strong> ${formatearFechaVisible(inc.fechaFinalizacion)}</div>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#d9251d;">❌ Error de conexión al cargar los trabajos de Brigada.</td></tr>';
+        }
     }
 
     function mostrarPanelEmpresa() {
@@ -2851,13 +3199,11 @@
 
 </script>
 <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(err => {
-      console.warn("PWA: no se pudo registrar el service worker.", err);
-    });
-  });
-}
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+        });
+    }
 </script>
 </body>
 </html>
