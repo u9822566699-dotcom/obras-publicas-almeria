@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#d9251d">
-    <meta name="description" content="SIMUN — Sistema de Incidencias Municipales del Área de Obras Públicas de Almería.">
-    <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-    <link rel="apple-touch-icon" href="./icons/icon-192.png">
-    <title>SIMUN — Sistema de Incidencias Municipales</title>
+    <title>SIMUN V16.7 - Sistema de Incidencias Municipales - Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul</title>
     
     <!-- Librería para exportación de PDF dinámico si se requiere -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -602,7 +597,7 @@
         <strong>Flujo operativo de incidencias:</strong> 
         1) Acepte o rechace los nuevos avisos en <strong>Pendiente</strong>.<br>
         2) Pulse <strong>Iniciar Trabajo</strong> cuando acuda a la ubicación.<br>
-        3) Marque como <strong>Completada</strong> cuando haya finalizado el trabajo.
+        3) Marque <strong>Finalizar intervención</strong> cuando haya terminado su parte. Si necesita otro oficio, use <strong>Pasar a otro oficio</strong>.
     </div>
 
     <div class="tabla-contenedor">
@@ -626,7 +621,7 @@
 <!-- MODAL PARA COMPLETAR INCIDENCIA -->
 <div id="modal-completar" class="modal-overlay oculto">
     <div class="modal-box">
-        <h3>✓ Finalizar Trabajo e Informe</h3>
+        <h3>✓ Finalizar intervención e informe</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
             Añada las observaciones finales del parte de trabajo.
         </p>
@@ -640,11 +635,28 @@
 
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
             <button type="button" class="btn-volver" style="margin:0;" onclick="cerrarModalCompletar()">Cancelar</button>
-            <button type="button" class="btn-consultar" style="background:#28a745;" onclick="guardarCierreIncidencia()">Confirmar Cierre</button>
+            <button type="button" class="btn-consultar" style="background:#28a745;" onclick="guardarCierreIncidencia()">Comunicar finalización</button>
         </div>
     </div>
 </div>
 
+
+<!-- V16.7: MODAL PASO A OTRO OFICIO -->
+<div id="modal-otro-oficio" class="modal-overlay oculto" style="z-index:10001;">
+    <div class="modal-box">
+        <h3>🔄 Pasar incidencia a otro oficio</h3>
+        <p style="font-size:13px;color:#666;">La intervención actual se registrará como finalizada y la misma incidencia continuará con el oficio seleccionado.</p>
+        <input type="hidden" id="modal-oficio-ref">
+        <div class="form-group">
+            <label for="modal-nuevo-oficio">Siguiente oficio</label>
+            <select id="modal-nuevo-oficio" style="width:100%;padding:10px;"></select>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+            <button type="button" class="btn-volver" onclick="cerrarModalOtroOficio()">Cancelar</button>
+            <button type="button" class="btn-consultar" onclick="confirmarOtroOficio()">Confirmar cambio</button>
+        </div>
+    </div>
+</div>
 
 <!-- VISTA ACCESO RESTRINGIDO DE RESPONSABLES -->
 <div id="vista-login-entidad" class="page-container oculto">
@@ -693,6 +705,16 @@
     <div id="entidad-session-banner" style="display:block; max-width:900px; margin:0 auto 10px auto; background:#e8f5e9; border:1px solid #a5d6a7; padding:10px 14px; border-radius:6px; font-size:13px;">
         🔐 <strong>Acceso autorizado:</strong> <span id="entidad-session-name"></span>
         <button type="button" onclick="cerrarSesionEntidad()" style="float:right; border:none; background:transparent; color:#b02a37; font-weight:bold; cursor:pointer;">Cerrar sesión</button>
+    </div>
+
+    <div class="page-container" style="margin-top:10px; padding:18px;">
+        <div class="section-title" style="margin-top:0;">🔍 Consultar y validar una incidencia</div>
+        <div class="consulta-form">
+            <input type="text" id="ref-buscar-entidad" placeholder="Referencia (ej. INC-2026-0005)" style="max-width:220px;">
+            <input type="text" id="pin-buscar-entidad" placeholder="PIN (5 dígitos)" maxlength="5" style="max-width:140px; text-align:center;">
+            <button type="button" class="btn-consultar" onclick="consultarEstadoEntidad()">Consultar</button>
+        </div>
+        <div id="resultado-consulta-entidad"></div>
     </div>
 
     <div style="max-width: 900px; margin: 0 auto;">
@@ -918,7 +940,7 @@
 </div>
 
 <script>
-    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbw2DgUnBPLZjhpLvtSwnnc6MA35uyBjG8IflqK0uDmAY2Cslt560nAFwEj68cJfRsZdxQ/exec";
+    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbx5x4atZUBUYjxL9S9okD71Hm4NtDdpWqC0ZB9bMANbx9ortz3pAr2-cIavLQ0OlYqH/exec";
 
     const mapaOficiosUsuarios = {
         "fontaneria": "Fontanería",
@@ -1836,11 +1858,6 @@
     let tipoEntidadActual = 'COLEGIO';
     let sesionEntidad = null;
 
-    function seleccionarTipoEntidad(tipo) {
-        tipoEntidadActual = tipo;
-        mostrarLoginEntidad();
-    }
-
     function mostrarLoginEntidad() {
         ocultarTodasLasVistas();
 
@@ -2008,51 +2025,84 @@
 
     let todasLasIncidenciasTecnico = [];
 
-    function ejecutarJSONP(urlBase, paramsObj, timeoutMs = 12000) {
+    function ejecutarJSONP(urlBase, paramsObj, timeoutMs = 30000) {
         return new Promise((resolve, reject) => {
-            const callbackName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
-            const script = document.createElement('script');
+            const action = String((paramsObj && paramsObj.action) || '');
+            // Solo repetimos operaciones de lectura/autenticación. Nunca repetimos
+            // operaciones que puedan escribir datos para evitar duplicados.
+            const accionesReintentables = new Set([
+                'login', 'loginEntidad', 'consultar',
+                'listarIncidenciasNuevas', 'listarTodoTecnico',
+                'listarPorOficio', 'listarBrigada', 'listarSolicitudesInspeccion'
+            ]);
+            const maxIntentos = accionesReintentables.has(action) ? 3 : 1;
+            let intento = 0;
+            let ultimoError = null;
 
-            let queryString;
-            try {
-                queryString = new URLSearchParams(paramsObj).toString();
-            } catch (e) {
-                reject(new Error('No se pudieron preparar los datos para el servidor.'));
-                return;
+            function lanzar() {
+                intento++;
+                const callbackName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+                const script = document.createElement('script');
+
+                let queryString;
+                try {
+                    const params = new URLSearchParams(paramsObj || {});
+                    // Evita respuestas cacheadas, especialmente útiles con Apps Script.
+                    params.append('_ts', Date.now().toString());
+                    queryString = params.toString();
+                } catch (e) {
+                    reject(new Error('No se pudieron preparar los datos para el servidor.'));
+                    return;
+                }
+
+                if (queryString.length > 6000) {
+                    reject(new Error('La petición es demasiado grande para JSONP.'));
+                    return;
+                }
+
+                let terminado = false;
+                const timer = setTimeout(() => {
+                    if (terminado) return;
+                    terminado = true;
+                    cleanup();
+                    ultimoError = new Error('Tiempo de respuesta agotado.');
+                    if (intento < maxIntentos) {
+                        setTimeout(lanzar, 700);
+                    } else {
+                        reject(new Error('No se ha podido comunicar con Google Apps Script. Compruebe la conexión a Internet e inténtelo de nuevo.'));
+                    }
+                }, timeoutMs);
+
+                function cleanup() {
+                    clearTimeout(timer);
+                    try { delete window[callbackName]; } catch(e) {}
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                }
+
+                window[callbackName] = function(data) {
+                    if (terminado) return;
+                    terminado = true;
+                    cleanup();
+                    resolve(data);
+                };
+
+                script.onerror = function() {
+                    if (terminado) return;
+                    terminado = true;
+                    cleanup();
+                    ultimoError = new Error('Error de comunicación con Google Apps Script.');
+                    if (intento < maxIntentos) {
+                        setTimeout(lanzar, 700);
+                    } else {
+                        reject(new Error('No se ha podido comunicar con Google Apps Script. Compruebe la conexión a Internet e inténtelo de nuevo.'));
+                    }
+                };
+
+                script.src = urlBase + '?' + queryString + '&callback=' + encodeURIComponent(callbackName);
+                document.body.appendChild(script);
             }
 
-            // JSONP es exclusivamente para datos pequeños. Evita que una imagen
-            // Base64 vuelva a entrar accidentalmente en una petición GET.
-            if (queryString.length > 6000) {
-                reject(new Error('La petición es demasiado grande para JSONP. Las imágenes deben subirse primero a Drive.'));
-                return;
-            }
-
-            const timer = setTimeout(() => {
-                cleanup();
-                reject(new Error("Tiempo de respuesta agotado. Compruebe la conexión o el servidor."));
-            }, timeoutMs);
-
-            function cleanup() {
-                clearTimeout(timer);
-                if (window[callbackName]) delete window[callbackName];
-                if (script.parentNode) script.parentNode.removeChild(script);
-            }
-
-            window[callbackName] = function(data) {
-                cleanup();
-                resolve(data);
-            };
-
-            script.onerror = function() {
-                cleanup();
-                reject(new Error("Error al conectar con la pasarela de datos."));
-            };
-
-            const params = new URLSearchParams(paramsObj);
-            params.append('callback', callbackName);
-            script.src = urlBase + '?' + params.toString();
-            document.body.appendChild(script);
+            lanzar();
         });
     }
 
@@ -2092,6 +2142,9 @@
         
         document.getElementById('observaciones_adicionales').value = "";
         document.getElementById('caja-referencia').style.display = 'none';
+        if (document.getElementById('ref-buscar-entidad')) document.getElementById('ref-buscar-entidad').value = '';
+        if (document.getElementById('pin-buscar-entidad')) document.getElementById('pin-buscar-entidad').value = '';
+        if (document.getElementById('resultado-consulta-entidad')) document.getElementById('resultado-consulta-entidad').innerHTML = '';
         
         const btnEnviar = document.querySelector('.btn-send');
         if (btnEnviar) {
@@ -2279,153 +2332,6 @@
         }
     }
 
-    async function consultarEstado() {
-        const ref = document.getElementById('ref-buscar').value.trim();
-        const pin = document.getElementById('pin-buscar').value.trim();
-        const resDiv = document.getElementById('resultado-consulta');
-
-        if (!ref || !pin) {
-            alert("Por favor, introduzca la Referencia y el PIN de 5 dígitos.");
-            return;
-        }
-
-        resDiv.style.display = "block";
-        resDiv.style.background = "#eef2f5";
-        resDiv.style.color = "#333";
-        resDiv.style.textAlign = "center";
-        resDiv.innerHTML = "🔍 Verificando datos en el servidor...";
-
-        try {
-            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action: 'consultar',
-                ref: ref,
-                pin: pin
-            });
-
-            if (respuesta.status === "FOUND") {
-                resDiv.style.background = "#ffffff";
-                resDiv.style.border = "1px solid #198754";
-                resDiv.style.color = "#212529";
-                resDiv.style.textAlign = "left";
-                resDiv.style.padding = "15px";
-                
-                resDiv.innerHTML = `
-                    <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="color: #d9251d; font-size: 16px;">${respuesta.ref}</strong>
-                        <span style="background: #e8f5e9; color: #0f5132; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">
-                            📅 Registrada: ${respuesta.fecha}
-                        </span>
-                    </div>
-                    <div style="font-size: 13px; line-height: 1.6;">
-                        <p style="margin: 4px 0;"><strong>Centro:</strong> ${respuesta.centro}</p>
-                        <p style="margin: 4px 0;"><strong>Oficio / Trabajo:</strong> ${respuesta.oficio} — <em>${respuesta.trabajo}</em></p>
-                        <p style="margin: 4px 0;"><strong>Estado actual:</strong> <span style="font-weight:bold; color:#d9251d;">${respuesta.estado}</span></p>
-                        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 10px 0;">
-                        <div style="margin-top:10px;">
-                            <p style="margin: 4px 0; color: #555;"><strong>Comentario final de la empresa:</strong></p>
-                            <div style="background:#f8f9fa; padding:8px 12px; border-left:3px solid #28a745; border-radius:4px; font-style:italic; font-size:12px; white-space:pre-line;">
-                                ${respuesta.comentarioFinalEmpresa || 'Sin comentario final de empresa.'}
-                            </div>
-                        </div>
-                        <div style="margin-top:10px;">
-                            <p style="margin: 4px 0; color: #555;"><strong>Comentario final del técnico:</strong></p>
-                            <div style="background:#f8f9fa; padding:8px 12px; border-left:3px solid #6f42c1; border-radius:4px; font-style:italic; font-size:12px; white-space:pre-line;">
-                                ${respuesta.comentarioFinalTecnico || 'Sin comentario final de técnico.'}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (respuesta.status === "WRONG_PIN") {
-                resDiv.style.background = "#fff3cd";
-                resDiv.style.border = "1px solid #ffebaa";
-                resDiv.style.color = "#664d03";
-                resDiv.style.textAlign = "center";
-                resDiv.innerHTML = "⚠️ El PIN introducido no es correcto para esta referencia.";
-            } else {
-                resDiv.style.background = "#f8d7da";
-                resDiv.style.border = "1px solid #f5c2c7";
-                resDiv.style.color = "#842029";
-                resDiv.style.textAlign = "center";
-                resDiv.innerHTML = "❌ No se ha encontrado ninguna incidencia con esa referencia.";
-            }
-        } catch (err) {
-            resDiv.style.background = "#f8d7da";
-            resDiv.style.color = "#842029";
-            resDiv.style.textAlign = "center";
-            resDiv.innerHTML = "❌ Error de comunicación con la base de datos.";
-        }
-    }
-
-    async function enviarPorCorreo() {
-        const centro = document.getElementById('centro-select').value;
-        const oficio = document.getElementById('oficio-select').value;
-        const tipo = document.getElementById('tipo-select').value;
-        const responsable = document.getElementById('responsable').value.trim();
-        const telefono = document.getElementById('telefono').value.trim();
-        const emailResponsable = document.getElementById('email_responsable').value.trim();
-
-        if (!centro || !oficio || !tipo) {
-            alert("Por favor, seleccione el Centro, el Oficio y el Tipo de incidencia.");
-            return;
-        }
-
-        if (!responsable || !telefono || !emailResponsable || !emailResponsable.includes('@')) {
-            alert("Por favor, complete Responsable, Teléfono y un correo electrónico válido.");
-            return;
-        }
-
-        const btnEnviar = document.querySelector('.btn-send');
-        btnEnviar.disabled = true;
-        btnEnviar.textContent = "Registrando incidencia...";
-
-        if (!sesionEntidad || !sesionEntidad.token) {
-            alert("La sesión de acceso no es válida. Vuelva al inicio y acceda de nuevo.");
-            return;
-        }
-
-        const datos = {
-            action: 'crearIncidencia',
-            tokenSesion: sesionEntidad.token,
-            tipoEntidad: sesionEntidad.tipoEntidad,
-            centro: sesionEntidad.entidad,
-            direccion: document.getElementById('direccion').value,
-            cp: document.getElementById('codigo_postal').value,
-            localidad: document.getElementById('localidad').value,
-            municipio: document.getElementById('municipio').value,
-            responsable: responsable,
-            emailResponsable: emailResponsable,
-            telefono: telefono,
-            oficio: oficio,
-            tipo: tipo,
-            obsIncidencia: document.getElementById('observaciones_incidencia').value,
-            notificadaAntes: document.getElementById('notificada_antes').value,
-            fecha: document.getElementById('fecha-campo').value,
-            refAnterior: document.getElementById('ref-anterior-campo').value,
-            obsAdicionales: document.getElementById('observaciones_adicionales').value,
-        };
-
-        try {
-            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, datos, 20000);
-
-            if (respuesta.status === "SUCCESS") {
-                document.getElementById('num-referencia-display').textContent = respuesta.ref;
-                document.getElementById('pin-display').textContent = respuesta.pin;
-                document.getElementById('caja-referencia').style.display = 'block';
-                btnEnviar.parentElement.style.display = 'none';
-                alert("Notificación registrada con éxito.\n\nReferencia: " + respuesta.ref + "\nPIN: " + respuesta.pin);
-
-                setTimeout(() => window.print(), 300);
-            } else {
-                throw new Error(respuesta.message || "El servidor no pudo registrar la incidencia.");
-            }
-        } catch (err) {
-            console.error("Fallo al registrar la incidencia:", err);
-            alert("❌ No se ha podido registrar la incidencia.\n\n" + (err.message || err));
-            btnEnviar.disabled = false;
-            btnEnviar.textContent = "Enviar Notificación";
-        }
-    }
-
     async function mostrarBandejaIncidenciasNuevas() {
         ocultarTodasLasVistas();
         document.getElementById('vista-incidencias-nuevas').classList.remove('oculto');
@@ -2456,6 +2362,151 @@
         } catch (err) {
             contador.textContent = 'No se ha podido comprobar la bandeja de entrada.';
             contenedor.innerHTML = '<div style="text-align:center; padding:25px; color:#d9251d;">❌ ' + (err.message || err) + '</div>';
+        }
+    }
+
+    async function consultarEstado(refId = 'ref-buscar', pinId = 'pin-buscar', resultId = 'resultado-consulta') {
+        const ref = document.getElementById(refId).value.trim();
+        const pin = document.getElementById(pinId).value.trim();
+        const resDiv = document.getElementById(resultId);
+
+        if (!ref || !pin) {
+            alert("Por favor, introduzca la Referencia y el PIN de 5 dígitos.");
+            return;
+        }
+
+        resDiv.style.display = "block";
+        resDiv.style.background = "#eef2f5";
+        resDiv.style.color = "#333";
+        resDiv.style.textAlign = "center";
+        resDiv.style.padding = "12px";
+        resDiv.innerHTML = "🔍 Verificando datos en el servidor...";
+
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'consultar',
+                ref: ref,
+                pin: pin,
+                tokenSesion: (typeof sesionEntidad !== 'undefined' && sesionEntidad && sesionEntidad.token)
+                    ? sesionEntidad.token
+                    : ((typeof usuarioActual !== 'undefined' && usuarioActual && usuarioActual.tokenSesion) ? usuarioActual.tokenSesion : '')
+            }, 20000);
+
+            if (respuesta.status === "FOUND") {
+                resDiv.style.background = "#fff";
+                resDiv.style.border = "1px solid #198754";
+                resDiv.style.color = "#212529";
+                resDiv.style.textAlign = "left";
+
+                const cola = respuesta.porDelante > 0
+                    ? `<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:12px;margin-top:12px;text-align:center;"><strong>📊 Hay ${respuesta.porDelante} ${respuesta.porDelante===1?'incidencia':'incidencias'} por delante.</strong>${respuesta.urgentesPorDelante>0?`<br><span style="color:#c62828;font-weight:bold;">🔴 ${respuesta.urgentesPorDelante} ${respuesta.urgentesPorDelante===1?'es urgente':'son urgentes'}</span>`:'<br><span style="color:#198754;">No hay urgencias por delante.</span>'}</div>`
+                    : `<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:12px;margin-top:12px;text-align:center;"><strong>📊 No hay incidencias por delante.</strong></div>`;
+
+                const historial = respuesta.historialOficios
+                    ? `<div style="margin-top:10px;"><strong>🔄 Historial de oficios:</strong><div style="background:#f8f9fa;padding:8px 12px;white-space:pre-line;font-size:12px;margin-top:4px;">${respuesta.historialOficios}</div></div>`
+                    : '';
+
+                const puedeValidarCentro = !!respuesta.puedeValidar || ['Completada','Pendiente de validación'].includes(String(respuesta.estado || ''));
+
+                // Guardamos el PIN usado en esta consulta dentro de la propia tarjeta.
+                // Así la validación posterior desde REF+PIN funciona aunque el centro
+                // no tenga una sesión iniciada.
+                const refSeguro = String(respuesta.ref || ref).replace(/'/g, "\\'");
+                const pinSeguro = String(pin).replace(/'/g, "\\'");
+
+                const validacion = puedeValidarCentro
+                    ? `<div style="margin-top:14px;padding:14px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;">
+                        <strong style="font-size:14px;">🟣 VALIDACIÓN DEL CENTRO</strong>
+                        <p style="margin:8px 0;">La actuación figura como finalizada. ¿Está solucionada?</p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn-accion-tabla" style="background:#198754;color:white;" onclick="validarDesdeCentro('${refSeguro}','${pinSeguro}','SI')">✅ Sí, está solucionada</button>
+                            <button class="btn-accion-tabla" style="background:#dc3545;color:white;" onclick="validarDesdeCentro('${refSeguro}','${pinSeguro}','NO')">❌ No, no está solucionada</button>
+                            <button class="btn-accion-tabla" style="background:#6f42c1;color:white;" onclick="validarDesdeCentro('${refSeguro}','${pinSeguro}','VISITA')">👷 Que lo valore un técnico</button>
+                        </div>
+                        <div id="campo-comentario-validacion-${refSeguro}" style="display:none;margin-top:10px;">
+                            <textarea id="comentario-validacion-${refSeguro}" placeholder="Indique brevemente qué queda pendiente (opcional)..." style="width:100%;min-height:70px;padding:8px;box-sizing:border-box;"></textarea>
+                            <button class="btn-consultar" style="margin-top:8px;" onclick="enviarValidacionCentro('${refSeguro}','${pinSeguro}')">Enviar valoración</button>
+                        </div>
+                    </div>`
+                    : '';
+
+                resDiv.innerHTML = `<div style="border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><strong style="color:#d9251d;font-size:16px;">${respuesta.ref}</strong><span style="background:#e8f5e9;color:#0f5132;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;">📅 Registrada: ${respuesta.fecha}</span></div><div style="font-size:13px;line-height:1.6;"><p style="margin:4px 0;"><strong>Centro:</strong> ${respuesta.centro}</p><p style="margin:4px 0;"><strong>Oficio / Trabajo:</strong> ${respuesta.oficio} — <em>${respuesta.trabajo}</em></p><p style="margin:4px 0;"><strong>Estado actual:</strong> <span style="font-weight:bold;color:#d9251d;">${respuesta.estado}</span></p>${['Pendiente','Aceptada por la empresa','Inicio'].includes(respuesta.estado)?cola:''}${historial}<hr style="border:0;border-top:1px dashed #ccc;margin:10px 0;"><div><p style="margin:4px 0;color:#555;"><strong>Comentario final de la empresa:</strong></p><div style="background:#f8f9fa;padding:8px 12px;border-left:3px solid #28a745;font-style:italic;font-size:12px;white-space:pre-line;">${respuesta.comentarioFinalEmpresa || 'Sin comentario final de empresa.'}</div></div>${validacion}</div>`;
+            } else if (respuesta.status === "WRONG_PIN") {
+                resDiv.style.background = "#fff3cd";
+                resDiv.style.border = "1px solid #ffebaa";
+                resDiv.innerHTML = "❌ La Referencia existe, pero el PIN no coincide. Revise el PIN de 5 dígitos.";
+            } else if (respuesta.status === "NOT_FOUND") {
+                resDiv.style.background = "#f8d7da";
+                resDiv.style.border = "1px solid #f5c2c7";
+                resDiv.innerHTML = "❌ No se ha encontrado una incidencia con esos datos. Compruebe la REF y el PIN.";
+            } else {
+                resDiv.style.background = "#f8d7da";
+                resDiv.style.border = "1px solid #f5c2c7";
+                resDiv.innerHTML = "❌ El servidor no ha podido completar la consulta.";
+            }
+        } catch (err) {
+            resDiv.style.background = "#f8d7da";
+            resDiv.style.border = "1px solid #f5c2c7";
+            resDiv.innerHTML = "❌ No se ha podido comunicar con el servidor de SIMUN. Compruebe la conexión a Internet e inténtelo de nuevo.";
+            console.error(err);
+        }
+    }
+
+    function consultarEstadoEntidad(){
+        consultarEstado('ref-buscar-entidad','pin-buscar-entidad','resultado-consulta-entidad');
+    }
+
+    async function validarDesdeCentro(ref, pin, accion){
+        const box = document.getElementById('campo-comentario-validacion-' + ref);
+        if (box) box.style.display = 'block';
+
+        if (accion === 'SI') {
+            await enviarValidacionCentro(ref, pin, 'SI');
+        } else if (box) {
+            box.dataset.accion = accion;
+        }
+    }
+
+    async function enviarValidacionCentro(ref, pin, accionOverride){
+        const box = document.getElementById('campo-comentario-validacion-' + ref);
+        const accion = accionOverride || (box ? box.dataset.accion : '');
+        const comentarioEl = document.getElementById('comentario-validacion-' + ref);
+        const comentario = comentarioEl ? comentarioEl.value.trim() : '';
+
+        if (!accion) return;
+        if (accion !== 'SI' && !comentario && !confirm('¿Desea continuar sin añadir un comentario?')) return;
+
+        try {
+            const token = (typeof sesionEntidad !== 'undefined' && sesionEntidad && sesionEntidad.token)
+                ? sesionEntidad.token
+                : ((typeof usuarioActual !== 'undefined' && usuarioActual && usuarioActual.tokenSesion) ? usuarioActual.tokenSesion : '');
+
+            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'validarIncidencia',
+                ref: ref,
+                pin: pin,
+                accion: accion,
+                comentario: comentario,
+                tokenSesion: token
+            }, 20000);
+
+            if (r.status === 'SUCCESS') {
+                alert('✅ Valoración registrada correctamente.');
+                if (document.getElementById('ref-buscar-entidad')) {
+                    document.getElementById('ref-buscar-entidad').value = ref;
+                    document.getElementById('pin-buscar-entidad').value = pin;
+                    consultarEstadoEntidad();
+                } else {
+                    document.getElementById('ref-buscar').value = ref;
+                    document.getElementById('pin-buscar').value = pin;
+                    consultarEstado();
+                }
+            } else {
+                alert('❌ ' + (r.message || 'No se pudo registrar la valoración.'));
+            }
+        } catch (err) {
+            alert('❌ Error de conexión al registrar la valoración.');
+            console.error(err);
         }
     }
 
@@ -2585,8 +2636,8 @@
 
     function actualizarKpis(datos) {
         document.getElementById('kpi-total').textContent = datos.length;
-        document.getElementById('kpi-pendientes').textContent = datos.filter(i => i.estado === 'Pendiente').length;
-        document.getElementById('kpi-completadas').textContent = datos.filter(i => i.estado === 'Completada').length;
+        document.getElementById('kpi-pendientes').textContent = datos.filter(i => ['Pendiente','Aceptada por la empresa','Inicio','Pendiente de revisión técnica','Pendiente de visita técnica'].includes(i.estado)).length;
+        document.getElementById('kpi-completadas').textContent = datos.filter(i => i.estado === 'Cerrada').length;
     }
 
     function normalizarFechaOrden(valor) {
@@ -2614,32 +2665,51 @@
     function ordenarIncidenciasPorPrioridadYFinalizacion(datos) {
         const lista = (Array.isArray(datos) ? datos : []).map((inc, i) => ({...inc, __i:i}));
         const estado = inc => String(inc.estado || '').trim().toLowerCase();
-        const esCompletada = inc => estado(inc) === 'completada';
-        const esUrgente = inc => String(inc.prioridad || '').trim().toUpperCase() === 'URGENTE' && !esCompletada(inc);
+        const esFinalizada = inc => estado(inc) === 'completada' || estado(inc) === 'cerrada';
+        const esUrgente = inc => String(inc.prioridad || '').trim().toUpperCase() === 'URGENTE' && !esFinalizada(inc);
+        const esEspecial = inc => String(inc.procedenteOtroOficio || '').trim().toUpperCase() === 'SI' && !esUrgente(inc) && !esFinalizada(inc);
         const fechaRegistro = inc => normalizarFechaOrden(inc.fechaRegistro);
-        const fechaFin = inc => normalizarFechaOrden(inc.fechaFinalizacion);
+        const fechaFin = inc => normalizarFechaOrden(inc.fechaCierre || inc.fechaFinalizacion);
 
-        const urgentes = lista.filter(esUrgente).sort((a,b) => fechaRegistro(a)-fechaRegistro(b) || a.__i-b.__i);
+        // ORDEN FIJO DEL PANEL:
+        // 1) URGENTES
+        // 2) PROCEDENTES DE OTRO OFICIO (especiales)
+        // 3) PENDIENTES, agrupadas por centro
+        // 4) COMPLETADAS / FINALIZADAS / CERRADAS
+        const urgentes = lista
+            .filter(esUrgente)
+            .sort((a,b) => fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
+
+        const especiales = lista
+            .filter(esEspecial)
+            .sort((a,b) => fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
 
         const mapa = new Map();
-        lista.filter(inc => !esUrgente(inc) && !esCompletada(inc)).forEach(inc => {
-            const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
-            if (!mapa.has(centro)) mapa.set(centro, []);
-            mapa.get(centro).push(inc);
-        });
+        lista
+            .filter(inc => !esUrgente(inc) && !esEspecial(inc) && !esFinalizada(inc))
+            .forEach(inc => {
+                const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
+                if (!mapa.has(centro)) mapa.set(centro, []);
+                mapa.get(centro).push(inc);
+            });
 
         const pendientes = [];
-        [...mapa.entries()].sort((a,b) => {
-            const fa = Math.min(...a[1].map(fechaRegistro));
-            const fb = Math.min(...b[1].map(fechaRegistro));
-            return fa-fb || a[0].localeCompare(b[0], 'es');
-        }).forEach(([centro, arr]) => {
-            arr.sort((a,b) => fechaRegistro(a)-fechaRegistro(b) || a.__i-b.__i);
-            pendientes.push(...arr);
-        });
+        [...mapa.entries()]
+            .sort((a,b) => {
+                const fa = Math.min(...a[1].map(fechaRegistro));
+                const fb = Math.min(...b[1].map(fechaRegistro));
+                return fa - fb || a[0].localeCompare(b[0], 'es');
+            })
+            .forEach(([centro, arr]) => {
+                arr.sort((a,b) => fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
+                pendientes.push(...arr);
+            });
 
-        const completadas = lista.filter(esCompletada).sort((a,b) => fechaFin(a)-fechaFin(b) || fechaRegistro(a)-fechaRegistro(b) || a.__i-b.__i);
-        return urgentes.concat(pendientes, completadas);
+        const finalizadas = lista
+            .filter(esFinalizada)
+            .sort((a,b) => fechaFin(a) - fechaFin(b) || fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
+
+        return urgentes.concat(especiales, pendientes, finalizadas);
     }
 
     function renderizarTablaTecnico(datos) {
@@ -2647,39 +2717,72 @@
         tbody.innerHTML = '';
 
         if (!datos || datos.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#777;">No hay incidencias registradas.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#777;">No hay incidencias registradas.</td></tr>';
             return;
         }
 
-        // La lista ya llega ordenada como: URGENTES → PENDIENTES agrupadas por centro → COMPLETADAS.
-        // Aquí solo añadimos una cabecera visual a cada grupo de pendientes, sin alterar el orden.
+        // V16.7: el orden visual debe ser SIEMPRE:
+        // URGENTES → ESPECIALES (otro oficio) → PENDIENTES → COMPLETADAS/FINALIZADAS.
+        const estadoNormalizado = inc => String(inc.estado || '').trim().toLowerCase();
+        const esFinalizada = inc => ['completada', 'cerrada'].includes(estadoNormalizado(inc));
+        const esUrgente = inc => String(inc.prioridad || '').trim().toUpperCase() === 'URGENTE' && !esFinalizada(inc);
+        const esEspecial = inc => String(inc.procedenteOtroOficio || '').trim().toUpperCase() === 'SI' && !esUrgente(inc) && !esFinalizada(inc);
+        const esPendiente = inc => !esUrgente(inc) && !esEspecial(inc) && !esFinalizada(inc);
+
+        // Contamos solo las incidencias que pertenecen a los grupos de pendientes.
         const gruposPendientes = new Map();
         datos.forEach((inc) => {
-            const estado = String(inc.estado || '').trim().toLowerCase();
-            const esCompletada = estado === 'completada';
-            const esUrgente = String(inc.prioridad || '').trim().toUpperCase() === 'URGENTE' && !esCompletada;
-            if (!esUrgente && !esCompletada) {
+            if (esPendiente(inc)) {
                 const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
                 gruposPendientes.set(centro, (gruposPendientes.get(centro) || 0) + 1);
             }
         });
 
+        let seccionUrgentesMostrada = false;
+        let seccionEspecialesMostrada = false;
+        let seccionPendientesMostrada = false;
+        let seccionFinalizadasMostrada = false;
         const centrosMostrados = new Set();
 
-        datos.forEach((inc, idx) => {
-            const estado = String(inc.estado || '').trim().toLowerCase();
-            const esCompletada = estado === 'completada';
-            const esUrgente = String(inc.prioridad || '').trim().toUpperCase() === 'URGENTE' && !esCompletada;
-            const esPendiente = !esUrgente && !esCompletada;
+        const anadirCabeceraSeccion = (texto, fondo, borde) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="7" style="padding:10px 12px; background:${fondo}; border-top:2px solid ${borde}; border-bottom:1px solid #ced4da; font-weight:bold; color:#343a40;">${texto}</td>`;
+            tbody.appendChild(tr);
+        };
 
-            if (esPendiente) {
+        datos.forEach((inc, idx) => {
+            const estado = estadoNormalizado(inc);
+            const finalizada = esFinalizada(inc);
+            const urgente = esUrgente(inc);
+            const especial = esEspecial(inc);
+            const pendiente = esPendiente(inc);
+
+            if (urgente && !seccionUrgentesMostrada) {
+                seccionUrgentesMostrada = true;
+                anadirCabeceraSeccion('🚨 URGENTES', '#fdecec', '#dc3545');
+            }
+            if (especial && !seccionEspecialesMostrada) {
+                seccionEspecialesMostrada = true;
+                anadirCabeceraSeccion('⭐ PROCEDENTES DE OTRO OFICIO', '#fff3cd', '#fd7e14');
+            }
+            if (pendiente && !seccionPendientesMostrada) {
+                seccionPendientesMostrada = true;
+                anadirCabeceraSeccion('📋 PENDIENTES', '#e9ecef', '#adb5bd');
+            }
+            if (finalizada && !seccionFinalizadasMostrada) {
+                seccionFinalizadasMostrada = true;
+                anadirCabeceraSeccion('✓ COMPLETADAS / FINALIZADAS', '#e9f7ef', '#198754');
+            }
+
+            // Dentro de PENDIENTES mantenemos el agrupamiento por centro.
+            if (pendiente) {
                 const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
                 if (!centrosMostrados.has(centro)) {
                     centrosMostrados.add(centro);
                     const totalCentro = gruposPendientes.get(centro) || 1;
                     const trGrupo = document.createElement('tr');
                     trGrupo.innerHTML = `
-                        <td colspan="6" style="padding:10px 12px; background:#e9ecef; border-top:2px solid #adb5bd; border-bottom:1px solid #ced4da;">
+                        <td colspan="7" style="padding:10px 12px; background:#f3f4f6; border-top:1px solid #adb5bd; border-bottom:1px solid #ced4da;">
                             <strong style="color:#343a40;">🏫 ${centro}</strong>
                             <span style="margin-left:10px; font-size:12px; font-weight:bold; color:#6c757d;">
                                 ${totalCentro} ${totalCentro === 1 ? 'incidencia pendiente' : 'incidencias pendientes'}
@@ -2691,14 +2794,18 @@
             }
 
             const tr = document.createElement('tr');
-            const badgePrioridad = esUrgente
+            const badgePrioridad = urgente
                 ? '<span class="badge badge-urgente">🚨 URGENTE</span>'
                 : '<span class="badge badge-normal">NORMAL</span>';
 
             let badgeEstado = `<span class="badge badge-pendiente">PENDIENTE</span>`;
             if (inc.estado === 'Aceptada por la empresa') badgeEstado = `<span class="badge badge-aceptada">ACEPTADA EMPRESA</span>`;
             if (inc.estado === 'Inicio') badgeEstado = `<span class="badge badge-inicio">EN INICIO</span>`;
-            if (inc.estado === 'Completada') badgeEstado = `<span class="badge badge-completada">✓ COMPLETADA</span>`;
+            if (inc.estado === 'Completada') badgeEstado = `<span class="badge badge-completada">✓ FINALIZADA</span>`;
+            if (inc.estado === 'Pendiente de validación') badgeEstado = `<span class="badge" style="background:#6f42c1;">PENDIENTE VALIDACIÓN</span>`;
+            if (inc.estado === 'Pendiente de revisión técnica') badgeEstado = `<span class="badge" style="background:#fd7e14;">REVISIÓN TÉCNICA</span>`;
+            if (inc.estado === 'Pendiente de visita técnica') badgeEstado = `<span class="badge" style="background:#6f42c1;">VISITA TÉCNICA</span>`;
+            if (inc.estado === 'Cerrada') badgeEstado = `<span class="badge badge-completada">✓ CERRADA</span>`;
 
             let botonInforme = '';
             if (inc.estado === 'Completada') {
@@ -2719,7 +2826,7 @@
             }
 
             tr.innerHTML = `
-                <td><strong>${inc.ref}</strong>${esIncidenciaNueva(inc) ? '<br><span class="badge badge-nueva" style="background:#198754; color:white; margin-top:4px; display:inline-block;">🆕 NUEVA</span>' : ''}<br><small style="color:#0d6efd; font-weight:bold;">PIN: ${inc.pin}</small><br>${badgePrioridad}</td>
+                <td><strong>${inc.ref}</strong>${esIncidenciaNueva(inc) ? '<br><span class="badge badge-nueva" style="background:#198754; color:white; margin-top:4px; display:inline-block;">🆕 NUEVA</span>' : ''}<br><small style="color:#0d6efd; font-weight:bold;">PIN: ${inc.pin}</small><br>${badgePrioridad}${String(inc.procedenteOtroOficio||'').toUpperCase()==='SI' ? '<br><span class="badge" style="background:#fd7e14;margin-top:4px;">⭐ OTRO OFICIO</span>' : ''}</td>
                 <td><strong>${inc.colegio}</strong><br><small style="color:#666;">${inc.direccion}</small></td>
                 <td><strong>${inc.oficio}</strong><br><small style="color:#666;">${inc.tipo}</small></td>
                 <td>
@@ -2729,6 +2836,8 @@
                     ${inc.observacionTecnica ? `<div style="margin-top:6px; color:#6f42c1;"><strong>Observación técnica:</strong><br>${inc.observacionTecnica}</div>` : ''}
                     ${inc.comentarioFinalEmpresa ? `<div style="margin-top:6px; color:#198754;"><strong>Comentario final empresa:</strong><br>${inc.comentarioFinalEmpresa}</div>` : ''}
                     ${inc.comentarioFinalTecnico ? `<div style="margin-top:6px; color:#6f42c1;"><strong>Comentario final técnico:</strong><br>${inc.comentarioFinalTecnico}</div>` : ''}
+                    ${inc.motivoRevisionTecnica ? `<div style="margin-top:6px; color:#fd7e14;"><strong>Revisión:</strong><br>${inc.motivoRevisionTecnica}</div>` : ''}
+                    ${inc.historialOficios ? `<div style="margin-top:6px; color:#0d6efd;"><strong>Historial de oficios:</strong><br><span style="white-space:pre-line;">${inc.historialOficios}</span></div>` : ''}
                 </td>
                 <td style="font-size:12px; line-height:1.55;">
                     ${badgeEstado}
@@ -2739,10 +2848,10 @@
                     </div>
                 </td>
                 <td style="text-align:center;">
-                    <button class="btn-accion-tabla" style="background:#6c757d; color:white;" onclick="cambiarPrioridadTecnico('${inc.ref}', '${esUrgente ? 'NORMAL' : 'URGENTE'}')">
-                        ${esUrgente ? 'Bajar Prioridad' : '⚡ Hacer Urgente'}
+                    <button class="btn-accion-tabla" style="background:#6c757d; color:white;" onclick="cambiarPrioridadTecnico('${inc.ref}', '${urgente ? 'NORMAL' : 'URGENTE'}')">
+                        ${urgente ? 'Bajar Prioridad' : '⚡ Hacer Urgente'}
                     </button>
-                    ${!esCompletada ? (String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA'
+                    ${!finalizada ? (String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA'
                         ? '<div style="margin-top:6px; font-size:12px; font-weight:bold; color:#198754;">🛠️ ASIGNADA A BRIGADA</div>'
                         : `<button class="btn-accion-tabla" style="background:#198754; color:white; margin-top:6px;" onclick="asignarIncidenciaABrigada('${inc.ref}')">🛠️ Brigada</button>`) : ''}
                     ${botonInforme}
@@ -2850,6 +2959,65 @@
         } catch (err) {
             alert("Error de conexión al intentar cambiar la prioridad.");
         }
+    }
+
+    async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
+        const motivo = (motivoInicial || prompt('Indique el motivo de la solicitud de valoración técnica:', '')) || '';
+        if (!motivo.trim()) return;
+        try {
+            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'solicitarInspeccion',
+                ref: ref,
+                motivo: motivo.trim(),
+                tipoSolicitud: 'POSTERIOR',
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+            if (r.status === 'SUCCESS') {
+                alert('✅ Solicitud de valoración técnica registrada.');
+                await cargarTablaTecnicoDesdeSheet();
+            } else {
+                alert('❌ ' + (r.message || 'No se pudo registrar la solicitud.'));
+            }
+        } catch (err) {
+            alert('❌ Error de conexión al solicitar la valoración técnica.');
+        }
+    }
+
+    async function registrarResultadoInspeccionUI(ref){
+        const opcion = prompt(
+            'Resultado de la valoración técnica:\n\n' +
+            '1 = No requiere actuación\n' +
+            '2 = Requiere una especialidad\n' +
+            '3 = Requiere varias especialidades\n' +
+            '4 = Actuación inmediata / urgente',
+            '1'
+        );
+        if (!opcion) return;
+        const mapa = { '1':'NO_ACCION', '2':'UNA_ESPECIALIDAD', '3':'VARIAS_ESPECIALIDADES', '4':'URGENTE' };
+        const resultado = mapa[String(opcion).trim()];
+        if (!resultado) { alert('Seleccione 1, 2, 3 o 4.'); return; }
+        const comentario = prompt('Observaciones de la valoración (opcional):', '') || '';
+        const oficios = (resultado === 'UNA_ESPECIALIDAD' || resultado === 'VARIAS_ESPECIALIDADES' || resultado === 'URGENTE')
+            ? (prompt('Oficio(s) requerido(s), separados por comas:', '') || '') : '';
+        try {
+            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'registrarResultadoInspeccion', ref: ref, resultado: resultado,
+                oficiosRequeridos: oficios.trim(), observacion: comentario.trim(),
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+            if (r.status === 'SUCCESS') { alert('✅ Resultado de inspección registrado.'); await cargarTablaTecnicoDesdeSheet(); }
+            else alert('❌ ' + (r.message || 'No se pudo registrar el resultado.'));
+        } catch (err) { alert('❌ Error de conexión al registrar el resultado.'); }
+    }
+
+    async function valorarIncidenciaTecnicaUI(ref){
+        const accion=confirm('¿La incidencia está solucionada?\n\nAceptar = SOLUCIONADA\nCancelar = NO SOLUCIONADA') ? 'SOLUCIONADA' : 'NO';
+        const comentario=prompt(accion==='SOLUCIONADA'?'Observación del técnico (opcional):':'Indique qué queda pendiente (recomendado):','');
+        if(accion==='NO' && comentario===null) return;
+        try{
+            const r=await ejecutarJSONP(URL_GOOGLE_SCRIPT,{action:'registrarResultadoInspeccion',ref:ref,accion:accion,comentario:(comentario||'').trim(),tokenSesion:usuarioActual.tokenSesion},20000);
+            if(r.status==='SUCCESS') await cargarTablaTecnicoDesdeSheet(); else alert('❌ '+(r.message||'No se pudo registrar la valoración.'));
+        }catch(err){alert('❌ Error de conexión al registrar la valoración.');}
     }
 
     function prepararInformePdf(indexEnMemoria) {
@@ -3085,16 +3253,19 @@
                         `;
                     } else if (inc.estado === 'Inicio') {
                         columnaAcciones = `
-                            <span class="badge badge-inicio" style="display:block; margin-bottom: 8px;">EN INICIO</span>
-                            <button class="btn-accion-tabla btn-acc-completar" onclick="abrirModalCompletar('${inc.ref}')">✓ Completar Trabajo</button>
+                            <span class="badge badge-inicio" style="display:block; margin-bottom: 8px;">EN CURSO</span>
+                            <button class="btn-accion-tabla btn-acc-completar" onclick="abrirModalCompletar('${inc.ref}')">✓ Finalizar intervención</button>
+                            <button class="btn-accion-tabla" style="background:#0d6efd;color:white;margin-top:5px;" onclick="abrirModalOtroOficio('${inc.ref}')">🔄 Pasar a otro oficio</button>
                             <button class="btn-accion-tabla" style="background:#fd7e14; color:white; margin-top:5px;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'CONTRATIEMPO_EMPRESA')">⚠️ Añadir contratiempo</button>
                         `;
-                    } else if (inc.estado === 'Completada') {
-                        columnaAcciones = `<span class="badge badge-completada" style="display:block;">✓ COMPLETADA</span>`;
+                    } else if (inc.estado === 'Pendiente de validación') {
+                        columnaAcciones = `<span class="badge" style="background:#6f42c1;display:block;">PENDIENTE DE VALIDACIÓN</span>`;
+                    } else if (inc.estado === 'Cerrada' || inc.estado === 'Completada') {
+                        columnaAcciones = `<span class="badge badge-completada" style="display:block;">✓ CERRADA</span>`;
                     }
 
                     tr.innerHTML = `
-                        <td><strong>${inc.ref}</strong>${esIncidenciaNueva(inc) ? '<br><span class="badge badge-nueva" style="background:#198754; color:white; margin-top:4px; display:inline-block;">🆕 NUEVA</span>' : ''}<br>${badgePrioridad}</td>
+                        <td><strong>${inc.ref}</strong>${esIncidenciaNueva(inc) ? '<br><span class="badge badge-nueva" style="background:#198754; color:white; margin-top:4px; display:inline-block;">🆕 NUEVA</span>' : ''}<br>${badgePrioridad}${String(inc.procedenteOtroOficio||'').toUpperCase()==='SI' ? '<br><span class="badge" style="background:#fd7e14;margin-top:4px;">⭐ OTRO OFICIO</span>' : ''}</td>
                         <td><strong>${inc.oficio}</strong><br><small style="color:#666;">${inc.tipo}</small></td>
                         <td><strong>${inc.colegio}</strong><br><small style="color:#666;">${inc.direccion}</small></td>
                         <td><strong>${inc.responsable}</strong><br><small style="color:#0d6efd;">📞 ${inc.telefono}</small></td>
@@ -3102,6 +3273,8 @@
                             <div><strong>Centro:</strong> ${inc.observaciones || 'Sin observaciones.'}</div>
                             ${inc.observacionTecnica ? `<div style="margin-top:6px; color:#6f42c1;"><strong>Observación técnica:</strong><br>${inc.observacionTecnica}</div>` : ''}
                             ${inc.comentarioFinalTecnico ? `<div style="margin-top:6px; color:#6f42c1;"><strong>Comentario final técnico:</strong><br>${inc.comentarioFinalTecnico}</div>` : ''}
+                            ${inc.motivoRevisionTecnica ? `<div style="margin-top:6px; color:#fd7e14;"><strong>Revisión:</strong><br>${inc.motivoRevisionTecnica}</div>` : ''}
+                            ${inc.historialOficios ? `<div style="margin-top:6px; color:#0d6efd;"><strong>Historial de oficios:</strong><br><span style="white-space:pre-line;">${inc.historialOficios}</span></div>` : ''}
                         </td>
                         <td style="text-align:center;">${columnaAcciones}</td>
                     `;
@@ -3153,6 +3326,21 @@
         }
     }
 
+    function abrirModalOtroOficio(ref){
+        document.getElementById('modal-oficio-ref').value=ref;
+        const sel=document.getElementById('modal-nuevo-oficio');
+        sel.innerHTML='<option value="">-- Seleccione oficio --</option>';
+        Object.keys(tiposPorOficio).forEach(of=>{ const o=document.createElement('option'); o.value=of;o.textContent=of;sel.appendChild(o); });
+        document.getElementById('modal-otro-oficio').classList.remove('oculto');
+    }
+    function cerrarModalOtroOficio(){ document.getElementById('modal-otro-oficio').classList.add('oculto'); }
+    async function confirmarOtroOficio(){
+        const ref=document.getElementById('modal-oficio-ref').value, oficio=document.getElementById('modal-nuevo-oficio').value;
+        if(!oficio){alert('Seleccione el oficio de destino.');return;}
+        if(!confirm('La intervención actual se registrará como finalizada y la incidencia pasará a '+oficio+'.\n\n¿Continuar?')) return;
+        try{const r=await ejecutarJSONP(URL_GOOGLE_SCRIPT,{action:'pasarAOtroOficio',ref:ref,nuevoOficio:oficio,tokenSesion:usuarioActual.tokenSesion},20000);if(r.status==='SUCCESS'){cerrarModalOtroOficio();await cargarTablaEmpresaDesdeSheet();}else alert('❌ '+(r.message||'No se pudo cambiar el oficio.'));}catch(err){alert('❌ Error de conexión al cambiar de oficio.');}
+    }
+
     function abrirModalCompletar(ref) {
         document.getElementById('modal-ref-incidencia').value = ref;
         document.getElementById('modal-obs-cierre').value = "Trabajo finalizado correctamente.";
@@ -3197,13 +3385,6 @@
         }
     }
 
-</script>
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-        });
-    }
 </script>
 </body>
 </html>
