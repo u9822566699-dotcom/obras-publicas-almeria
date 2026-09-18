@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+<!-- SIMUN V18.01 - VISITA INICIAL -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMUN V17 - Sistema de Incidencias Municipales - Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul</title>
+    <title>SIMUN V18 - Sistema de Incidencias Municipales</title>
     
     <!-- Librería para exportación de PDF dinámico si se requiere -->
-    <script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=SmANg8QFaLHD1z_3_ez9R6-AgttGiBX45nekKlwLYdXp9LdMQY3UzIq-LOziMxN4hjs3GxESfjRkB9bPyKVzu3E6M78AcbgoXtfY_03cebHJoaOeLnamhfge84y2Rj5dx0c_BaU0Agdcz9D_LAH3gOZks1X8mTeGgVRZEi-aC2LyFzjy9-BuzeE8ast6AMIYleYmPgYjZN73uiwQRYhG7JGhQMWKwCJgU-R6_1wJqGeWoptp68Bheyp33_9ZH5XBp6hZ95_I8eRzLcuAFqhMginpYQ09AMxcY2m2RFpnDaoxq7SYDcMOurEuIaM0Th0n4DyO3IS5kGYA-E6y2mL95Q" charset="UTF-8"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -277,6 +278,22 @@
             transition: background 0.2s;
         }
         .btn-imprimir-tecnico:hover { background-color: #1a252f; }
+        
+        .panel-nav-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-bottom:15px; }
+        .btn-panel-nav { border:none; padding:9px 14px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer; color:#fff; }
+        .btn-panel-visitas { background:#6f42c1; }
+        .btn-panel-visitas:hover { background:#59359a; }
+        .btn-panel-refresh { background:#0d6efd; }
+        .btn-panel-refresh:hover { background:#0b5ed7; }
+        .rol-panel-badge { display:inline-block; padding:5px 9px; border-radius:12px; background:#e9ecef; color:#495057; font-size:11px; font-weight:bold; margin-top:6px; }
+        .visita-card { background:#fff; border:1px solid #dee2e6; border-left:5px solid #6f42c1; border-radius:7px; padding:14px; }
+        .visita-card + .visita-card { margin-top:10px; }
+        .visita-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin-top:10px; }
+        .visita-dato { background:#f8f9fa; border-radius:5px; padding:8px 10px; font-size:12px; }
+        .visita-dato strong { display:block; color:#495057; margin-bottom:2px; }
+        .visita-acciones { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-top:12px; }
+        .badge-visita { background:#6f42c1; color:#fff; }
+        
 
         /* MODAL DE CIERRE */
         .modal-overlay {
@@ -353,6 +370,7 @@
         <button type="button" class="btn-portada" onclick="seleccionarTipoEntidad('COLEGIO')">🏫 Colegios y centros educativos</button>
         <button type="button" class="btn-portada" onclick="seleccionarTipoEntidad('ASOCIACION')">🏘️ Asociaciones Vecinales</button>
         <button type="button" class="btn-portada" onclick="seleccionarTipoEntidad('MUNICIPAL')">🏛️ Edificios y dependencias municipales</button>
+        <button type="button" class="btn-portada" onclick="mostrarLoginAutorizado()">🔐 PERFIL AUTORIZADO</button>
     </div>
 
     <div class="consulta-box">
@@ -442,13 +460,24 @@
     </div>
     <div class="header">
         <div class="header-title">
-            <h1>Panel de Control Técnico</h1>
+            <h1 id="tecnico-panel-titulo">Panel de Control Técnico</h1>
             <h2>GESTIÓN GLOBAL DE INCIDENCIAS</h2>
+            <span id="tecnico-panel-rol" class="rol-panel-badge">TÉCNICO · OFICIOS ASIGNADOS</span>
         </div>
         <div class="logo-text">ALMERÍA<span>CIUDAD</span></div>
     </div>
 
-    <!-- KPIs -->
+    
+<div class="panel-nav-actions">
+    <button type="button" class="btn-panel-nav btn-panel-visitas" onclick="mostrarPanelVisitas()">
+        🔎 Visitas / inspecciones solicitadas <span id="contador-visitas-pendientes"></span>
+    </button>
+    <button type="button" class="btn-panel-nav btn-panel-refresh" onclick="cargarTablaTecnicoDesdeSheet()">
+        🔄 Actualizar panel
+    </button>
+</div>
+
+<!-- KPIs -->
     <div class="grid-3" style="margin-bottom: 20px;">
         <div style="background:#f8f9fa; border-left:4px solid #0d6efd; padding:12px; border-radius:4px; text-align:center;">
             <span style="font-size:12px; color:#666; font-weight:bold;">TOTAL REGISTRADAS</span>
@@ -472,17 +501,6 @@
         </div>
         <div id="lista-trabajos-curso" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px;">
             <div style="font-size:12px; color:#777;">No hay trabajos iniciados.</div>
-        </div>
-    </div>
-
-    <!-- V17: VISITAS / INSPECCIONES SOLICITADAS -->
-    <div id="panel-visitas-tecnicas" style="background:#f5f0ff; border:1px solid #d8c7f0; border-left:4px solid #6f42c1; padding:14px 16px; border-radius:6px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
-            <strong style="font-size:14px; color:#4b2a7b;">🔎 VISITAS / INSPECCIONES SOLICITADAS</strong>
-            <span id="contador-visitas-tecnicas" style="font-size:12px; color:#6f42c1; font-weight:bold;">0 pendientes</span>
-        </div>
-        <div id="lista-visitas-tecnicas" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:10px;">
-            <div style="font-size:12px; color:#777;">Cargando solicitudes...</div>
         </div>
     </div>
 
@@ -544,6 +562,41 @@
             </tbody>
         </table>
     </div>
+</div>
+
+
+<!-- VISTA VISITAS / INSPECCIONES SOLICITADAS -->
+<div id="vista-visitas" class="page-container oculto">
+    <div class="identidad-institucional">
+        <div class="identidad-texto">
+            <div class="identidad-ayuntamiento">Ayuntamiento de Almería</div>
+            <div class="identidad-area">Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul</div>
+            <div class="identidad-seccion">Sección de Conservación y Mantenimiento</div>
+        </div>
+    </div>
+    <div class="header">
+        <div class="header-title">
+            <h1>Visitas / Inspecciones solicitadas</h1>
+            <h2>VALORACIONES TÉCNICAS PENDIENTES</h2>
+        </div>
+        <div class="logo-text">ALMERÍA<span>CIUDAD</span></div>
+    </div>
+
+    <div style="background:#f3eefb; border:1px solid #d8c8ee; border-left:5px solid #6f42c1; padding:14px 16px; border-radius:6px; margin-bottom:18px;">
+        <strong>🔎 Solicitudes pendientes</strong>
+        <div style="font-size:12px; color:#5f566b; margin-top:5px;">
+            Aquí aparecen las solicitudes de visita o valoración técnica que todavía están pendientes de revisión.
+            El técnico solo verá las correspondientes a sus oficios asignados; Administración verá todas.
+        </div>
+        <div id="contador-visitas-panel" style="font-size:13px; font-weight:bold; color:#5b3a7a; margin-top:8px;">Cargando...</div>
+    </div>
+
+    <div class="panel-nav-actions" style="justify-content:flex-start;">
+        <button type="button" class="btn-panel-nav btn-panel-refresh" onclick="mostrarPanelTecnico()">← Volver al panel</button>
+        <button type="button" class="btn-panel-nav btn-panel-visitas" onclick="cargarPanelVisitas()">🔄 Actualizar visitas</button>
+    </div>
+
+    <div id="lista-visitas-solicitadas"></div>
 </div>
 
 <!-- VISTA BRIGADA MUNICIPAL -->
@@ -719,12 +772,13 @@
     </div>
 
     <div class="page-container" style="margin-top:10px; padding:18px;">
-        <div class="section-title" style="margin-top:0;">📋 Historial de incidencias</div>
-        <p style="font-size:13px;color:#666;margin:8px 0 14px 0;">Consulte las incidencias presentadas por este centro o entidad y su estado de tramitación.</p>
-        <div style="text-align:center;">
-            <button type="button" class="btn-consultar" onclick="consultarHistorialEntidad()">📋 Consultar historial</button>
+        <div class="section-title" style="margin-top:0;">🔍 Consultar y validar una incidencia</div>
+        <div class="consulta-form">
+            <input type="text" id="ref-buscar-entidad" placeholder="Referencia (ej. C-2026-0001)" style="max-width:220px;">
+            <input type="text" id="pin-buscar-entidad" placeholder="PIN (5 dígitos)" maxlength="5" style="max-width:140px; text-align:center;">
+            <button type="button" class="btn-consultar" onclick="consultarEstadoEntidad()">Consultar</button>
         </div>
-        <div id="resultado-historial-entidad"></div>
+        <div id="resultado-consulta-entidad"></div>
     </div>
 
     <div style="max-width: 900px; margin: 0 auto;">
@@ -782,7 +836,8 @@
                 <span style="font-size: 16px; color: #333; margin-right: 20px;">Nº Referencia: <strong id="num-referencia-display" style="color: #d9251d; font-size: 22px;"></strong></span>
                 <span style="font-size: 16px; color: #333;">PIN de Seguridad: <strong id="pin-display" style="color: #0d6efd; font-size: 22px;"></strong></span>
             </div>
-            <small style="display: block; margin-top: 8px; color: #555;">Guarde ambos datos para poder realizar consultas sobre el estado de su solicitud.</small>
+            <small style="display: block; margin-top: 8px; color: #555;">Guarde ambos datos para poder realizar consultas sobre el estado de su solicitud.
+            <div id="resultado-visita-inicial" style="display:none; margin-top:12px; padding:9px; border-radius:5px; background:#f3eefe; color:#4b2a75; font-weight:600;"></div></small>
         </div>
 
         <div class="header">
@@ -795,55 +850,28 @@
 
         <div class="section-title"><span id="seccion-entidad">Datos del centro o colegio</span></div>
         
-        <div class="form-group">
+        <div id="grupo-filtro-autorizado" class="form-group" style="display:none;">
+            <label for="filtro-tipo-autorizado">Tipo de entidad *</label>
+            <select id="filtro-tipo-autorizado" onchange="actualizarSelectorAutorizado()">
+                <option value="">Seleccione el tipo de entidad...</option>
+                <option value="COLEGIO">🏫 Colegios y centros educativos</option>
+                <option value="ASOCIACION">🏘️ Asociaciones Vecinales</option>
+                <option value="MUNICIPAL">🏛️ Edificios y dependencias municipales</option>
+            </select>
+        </div>
+
+        <div id="grupo-centro-normal" class="form-group">
             <label for="centro-select"><span id="label-entidad">Centro o colegio (MD) *</span></label>
-            <select id="centro-select" onchange="actualizarCentro()">
-                <option value="">-- Seleccione un centro o colegio --</option>
-                <option value="CEIP Adela Díaz">CEIP Adela Díaz</option>
-                <option value="CEIP Alfredo Molina Martín">CEIP Alfredo Molina Martín</option>
-                <option value="CEIP Ángel Suquía">CEIP Ángel Suquía</option>
-                <option value="CEIP Ave María del Diezmo">CEIP Ave María del Diezmo</option>
-                <option value="CEIP Ave María del Quemadero">CEIP Ave María del Quemadero</option>
-                <option value="CEIP Colonia Araceli">CEIP Colonia Araceli</option>
-                <option value="CEIP El Puche">CEIP El Puche</option>
-                <option value="CEIP Europa José Ramos Santander">CEIP Europa José Ramos Santander</option>
-                <option value="CEIP Francisco de Goya">CEIP Francisco de Goya</option>
-                <option value="CEIP Freinet">CEIP Freinet</option>
-                <option value="CEIP Giner de los Ríos">CEIP Giner de los Ríos</option>
-                <option value="CEIP Ginés Morata">CEIP Ginés Morata</option>
-                <option value="CEIP Indalo">CEIP Indalo</option>
-                <option value="CEIP Inés Relaño">CEIP Inés Relaño</option>
-                <option value="CEIP Josefina Baro Soler">CEIP Josefina Baro Soler</option>
-                <option value="CEIP Juan Ramón Jiménez">CEIP Juan Ramón Jiménez</option>
-                <option value="CEIP La Chanca">CEIP La Chanca</option>
-                <option value="CEIP Lope de Vega">CEIP Lope de Vega</option>
-                <option value="CEIP Los Almendros">CEIP Los Almendros</option>
-                <option value="CEIP Los Millares">CEIP Los Millares</option>
-                <option value="CEIP Luis Siret">CEIP Luis Siret</option>
-                <option value="CEIP Madre de la Luz">CEIP Madre de la Luz</option>
-                <option value="CEIP Mar Mediterráneo">CEIP Mar Mediterráneo</option>
-                <option value="CEIP Nueva Almería">CEIP Nueva Almería</option>
-                <option value="CEIP Rafael Alberti">CEIP Rafael Alberti</option>
-                <option value="CEIP San Fernando">CEIP San Fernando</option>
-                <option value="CEIP San Gabriel">CEIP San Gabriel</option>
-                <option value="CEIP San Luis">CEIP San Luis</option>
-                <option value="CEIP San Valentín">CEIP San Valentín</option>
-                <option value="CEIP Santa Isabel">CEIP Santa Isabel</option>
-                <option value="CEIP Virgen del Loreto">CEIP Virgen del Loreto</option>
-                <option value="CEIP Virgen del Mar">CEIP Virgen del Mar</option>
-                <option value="CEP Padre Méndez">CEP Padre Méndez</option>
-                <option value="CEIP San Bernardo">CEIP San Bernardo</option>
-                <option value="CEIP San Vicente">CEIP San Vicente</option>
-                <option value="CEIP Virgen del Mar. Cabo de Gata">CEIP Virgen del Mar. Cabo de Gata</option>
-                <option value="CEIP Ferrer Guardia">CEIP Ferrer Guardia</option>
-                <option value="CEIP San Indalecio">CEIP San Indalecio</option>
-                <option value="CEIP Torremar">CEIP Torremar</option>
-                <option value="CEE Princesa Sofía">CEE Princesa Sofía</option>
-                <option value="CEI Mar de Alborán">CEI Mar de Alborán</option>
-                <option value="CEIP Rodríguez Espinosa">CEIP Rodríguez Espinosa</option>
-                <option value="CEI Maestro Padilla">CEI Maestro Padilla</option>
-                <option value="Guardería De El Alquián">Guardería De El Alquián</option>
-                <option value="Guardería De Los Almendros">Guardería De Los Almendros</option>
+            <input type="text" id="centro-select" list="lista-entidades"
+                   placeholder="Escriba o seleccione el centro, asociación o edificio municipal..."
+                   autocomplete="off" onchange="actualizarCentro()">
+            <datalist id="lista-entidades"></datalist>
+        </div>
+
+        <div id="grupo-centro-autorizado" class="form-group" style="display:none;">
+            <label for="centro-select-autorizado"><span id="label-centro-autorizado">Centro o colegio *</span></label>
+            <select id="centro-select-autorizado" onchange="actualizarCentro()">
+                <option value="">Seleccione primero el tipo de entidad...</option>
             </select>
         </div>
 
@@ -941,6 +969,20 @@
         <div class="form-group">
             <label>Observaciones adicionales</label>
             <input type="text" id="observaciones_adicionales" placeholder="Observaciones generales...">
+        </div>
+
+        <div class="form-group">
+            <label>¿Solicitar visita o valoración técnica al crear esta notificación?</label>
+            <select id="solicitar-visita" onchange="toggleVisitaInicial()">
+                <option value="No">No</option>
+                <option value="Sí">Sí, solicitar visita / valoración técnica</option>
+            </select>
+        </div>
+
+        <div class="form-group oculto" id="grupo-motivo-visita" style="background:#f3eefe; border:1px solid #d7c5f4; padding:12px; border-radius:6px;">
+            <label for="motivo-visita">Motivo de la solicitud de visita / valoración técnica *</label>
+            <textarea id="motivo-visita" placeholder="Explique por qué considera necesaria la visita o valoración técnica..."></textarea>
+            <small style="display:block; margin-top:5px; color:#555;">Este motivo quedará asociado a la solicitud de inspección técnica.</small>
         </div>
 
         <div class="btn-container">
@@ -1867,6 +1909,7 @@
 
     let tipoEntidadActual = 'COLEGIO';
     let sesionEntidad = null;
+    let modoAccesoEntidad = 'ENTIDAD'; // ENTIDAD = centro fijo; AUTORIZADO = puede elegir cualquier entidad
 
     function mostrarLoginEntidad() {
         ocultarTodasLasVistas();
@@ -1885,6 +1928,22 @@
         document.getElementById('password-entidad').value = '';
         document.getElementById('login-entidad-error').style.display = 'none';
 
+        document.getElementById('vista-login-entidad').classList.remove('oculto');
+        window.scrollTo(0, 0);
+        setTimeout(() => document.getElementById('usuario-entidad').focus(), 50);
+    }
+
+    function mostrarLoginAutorizado() {
+        modoAccesoEntidad = 'AUTORIZADO';
+        tipoEntidadActual = 'TODAS';
+        ocultarTodasLasVistas();
+
+        document.getElementById('titulo-login-entidad').textContent = 'PERFIL AUTORIZADO';
+        document.getElementById('texto-login-entidad').textContent =
+            'Introduzca sus credenciales para acceder como perfil autorizado y seleccionar el centro o entidad para el que realiza el aviso.';
+        document.getElementById('usuario-entidad').value = '';
+        document.getElementById('password-entidad').value = '';
+        document.getElementById('login-entidad-error').style.display = 'none';
         document.getElementById('vista-login-entidad').classList.remove('oculto');
         window.scrollTo(0, 0);
         setTimeout(() => document.getElementById('usuario-entidad').focus(), 50);
@@ -1909,7 +1968,7 @@
                 action: 'loginEntidad',
                 usuario: usuario,
                 password: password,
-                tipoEntidad: tipoEntidadActual
+                tipoEntidad: modoAccesoEntidad === 'AUTORIZADO' ? 'TODAS' : tipoEntidadActual
             }, 20000);
 
             if (respuesta.status !== 'SUCCESS') {
@@ -1920,7 +1979,17 @@
 
             sesionEntidad = respuesta;
 
-            // El usuario NO elige ni puede modificar la entidad.
+            if (respuesta.rol === 'AUTORIZADO') {
+                modoAccesoEntidad = 'AUTORIZADO';
+                tipoEntidadActual = '';
+                prepararFormularioAutorizado();
+                return;
+            }
+
+            modoAccesoEntidad = 'ENTIDAD';
+
+            // Para un perfil ENTIDAD se mantiene el comportamiento anterior:
+            // la cuenta solo puede trabajar con su propia entidad.
             const select = document.getElementById('centro-select');
             const label = document.getElementById('label-entidad');
             const seccion = document.getElementById('seccion-entidad');
@@ -1937,19 +2006,9 @@
             }
 
             resetearFormulario();
-
-            select.innerHTML = '';
-            const option = document.createElement('option');
-            option.value = respuesta.entidad;
-            option.textContent = respuesta.entidad;
-            option.selected = true;
-            select.appendChild(option);
-            select.disabled = true;
-
-            document.getElementById('direccion').value = respuesta.direccion || '';
-            document.getElementById('codigo_postal').value = respuesta.cp || '';
-            document.getElementById('localidad').value = respuesta.localidad || '';
-            document.getElementById('municipio').value = respuesta.municipio || '';
+            actualizarSelectorEntidad();
+            select.value = respuesta.entidad || '';
+            actualizarCentro();
 
             ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
                 document.getElementById(id).readOnly = true;
@@ -1973,7 +2032,8 @@
 
     function cerrarSesionEntidad() {
         sesionEntidad = null;
-        document.getElementById('centro-select').disabled = false;
+        modoAccesoEntidad = 'ENTIDAD';
+        tipoEntidadActual = 'COLEGIO';
         ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.readOnly = false;
@@ -1985,46 +2045,42 @@
 
     function seleccionarTipoEntidad(tipo) {
         tipoEntidadActual = tipo;
+        actualizarSelectorEntidad();
         mostrarFormulario();
     }
 
     function actualizarSelectorEntidad() {
-        const select = document.getElementById('centro-select');
+        const input = document.getElementById('centro-select');
+        const lista = document.getElementById('lista-entidades');
         const label = document.getElementById('label-entidad');
         const seccion = document.getElementById('seccion-entidad');
-        if (!select || !label || !seccion) return;
+        if (!input || !lista || !label || !seccion) return;
 
+        lista.innerHTML = '';
+
+        let nombres = [];
         if (tipoEntidadActual === 'ASOCIACION') {
             seccion.textContent = 'Datos de la asociación vecinal';
             label.textContent = 'Asociación (MD) *';
-            select.innerHTML = '<option value="">-- Seleccione una asociación --</option>';
-            asociacionesVecinales.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item['Nombre'];
-                option.textContent = item['Nombre'];
-                select.appendChild(option);
-            });
+            input.placeholder = 'Escriba o seleccione la asociación vecinal...';
+            nombres = asociacionesVecinales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipoEntidadActual === 'MUNICIPAL') {
             seccion.textContent = 'Datos del edificio o dependencia municipal';
             label.textContent = 'Edificio o dependencia municipal (MD) *';
-            select.innerHTML = '<option value="">-- Seleccione un edificio o dependencia municipal --</option>';
-            edificiosMunicipales.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item['Nombre'];
-                option.textContent = item['Nombre'];
-                select.appendChild(option);
-            });
+            input.placeholder = 'Escriba o seleccione el edificio o dependencia municipal...';
+            nombres = edificiosMunicipales.map(item => item['Nombre']).filter(Boolean);
         } else {
             seccion.textContent = 'Datos del centro o colegio';
             label.textContent = 'Centro o colegio (MD) *';
-            select.innerHTML = '<option value="">-- Seleccione un centro o colegio --</option>';
-            Object.keys(centrosEducativos).forEach(nombre => {
-                const option = document.createElement('option');
-                option.value = nombre;
-                option.textContent = nombre;
-                select.appendChild(option);
-            });
+            input.placeholder = 'Escriba o seleccione el centro o colegio...';
+            nombres = Object.keys(centrosEducativos);
         }
+
+        nombres.forEach(nombre => {
+            const option = document.createElement('option');
+            option.value = nombre;
+            lista.appendChild(option);
+        });
     }
 
     let usuarioActual = {
@@ -2043,8 +2099,7 @@
             const accionesReintentables = new Set([
                 'login', 'loginEntidad', 'consultar',
                 'listarIncidenciasNuevas', 'listarTodoTecnico',
-                'listarPorOficio', 'listarBrigada', 'listarSolicitudesInspeccion',
-                'historialEntidad'
+                'listarPorOficio', 'listarBrigada', 'listarSolicitudesInspeccion'
             ]);
             const maxIntentos = accionesReintentables.has(action) ? 3 : 1;
             let intento = 0;
@@ -2123,6 +2178,7 @@
         document.getElementById('vista-login').classList.add('oculto');
         document.getElementById('vista-login-entidad').classList.add('oculto');
         document.getElementById('vista-tecnico').classList.add('oculto');
+        document.getElementById('vista-visitas').classList.add('oculto');
         document.getElementById('vista-incidencias-nuevas').classList.add('oculto');
         document.getElementById('vista-empresa').classList.add('oculto');
         document.getElementById('vista-brigada').classList.add('oculto');
@@ -2136,7 +2192,10 @@
 
     function resetearFormulario() {
         document.getElementById('centro-select').value = "";
-        document.getElementById('centro-select').disabled = false;
+        const filtroAut = document.getElementById('filtro-tipo-autorizado');
+        const centroAut = document.getElementById('centro-select-autorizado');
+        if (filtroAut) filtroAut.value = "";
+        if (centroAut) centroAut.innerHTML = '<option value="">Seleccione primero el tipo de entidad...</option>';
         document.getElementById('direccion').value = "";
         document.getElementById('codigo_postal').value = "";
         document.getElementById('localidad').value = "";
@@ -2152,6 +2211,14 @@
         toggleFechaNotificacion();
         
         document.getElementById('observaciones_adicionales').value = "";
+        const selVisita = document.getElementById('solicitar-visita');
+        if (selVisita) selVisita.value = 'No';
+        const motivoVisitaCampo = document.getElementById('motivo-visita');
+        if (motivoVisitaCampo) motivoVisitaCampo.value = '';
+        const grupoVisita = document.getElementById('grupo-motivo-visita');
+        if (grupoVisita) grupoVisita.classList.add('oculto');
+        const resultadoVisita = document.getElementById('resultado-visita-inicial');
+        if (resultadoVisita) { resultadoVisita.style.display = 'none'; resultadoVisita.textContent = ''; }
         document.getElementById('caja-referencia').style.display = 'none';
         if (document.getElementById('ref-buscar-entidad')) document.getElementById('ref-buscar-entidad').value = '';
         if (document.getElementById('pin-buscar-entidad')) document.getElementById('pin-buscar-entidad').value = '';
@@ -2165,28 +2232,90 @@
         }
     }
 
+    function prepararFormularioAutorizado() {
+        ocultarTodasLasVistas();
+        resetearFormulario();
+
+        document.getElementById('grupo-filtro-autorizado').style.display = 'block';
+        document.getElementById('grupo-centro-normal').style.display = 'none';
+        document.getElementById('grupo-centro-autorizado').style.display = 'block';
+        document.getElementById('seccion-entidad').textContent = 'Selección de centro o entidad para el aviso';
+        document.getElementById('label-centro-autorizado').textContent = 'Centro / entidad *';
+
+        ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
+            document.getElementById(id).readOnly = true;
+        });
+
+        document.getElementById('entidad-session-banner').style.display = 'block';
+        document.getElementById('entidad-session-name').textContent =
+            'PERFIL AUTORIZADO — ' + (sesionEntidad.nombreUsuario || sesionEntidad.usuario || 'Usuario autorizado');
+        document.getElementById('vista-formulario').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function actualizarSelectorAutorizado() {
+        const tipo = document.getElementById('filtro-tipo-autorizado').value;
+        const select = document.getElementById('centro-select-autorizado');
+        const label = document.getElementById('label-centro-autorizado');
+        if (!select) return;
+
+        tipoEntidadActual = tipo;
+        select.innerHTML = '<option value="">Seleccione el centro / entidad...</option>';
+
+        let nombres = [];
+        if (tipo === 'ASOCIACION') {
+            label.textContent = 'Asociación vecinal *';
+            nombres = asociacionesVecinales.map(item => item['Nombre']).filter(Boolean);
+        } else if (tipo === 'MUNICIPAL') {
+            label.textContent = 'Edificio o dependencia municipal *';
+            nombres = edificiosMunicipales.map(item => item['Nombre']).filter(Boolean);
+        } else if (tipo === 'COLEGIO') {
+            label.textContent = 'Centro o colegio *';
+            nombres = Object.keys(centrosEducativos);
+        }
+
+        nombres.forEach(nombre => {
+            const option = document.createElement('option');
+            option.value = nombre;
+            option.textContent = nombre;
+            select.appendChild(option);
+        });
+
+        document.getElementById('direccion').value = '';
+        document.getElementById('codigo_postal').value = '';
+        document.getElementById('localidad').value = '';
+        document.getElementById('municipio').value = '';
+    }
+
+    function obtenerCentroSeleccionado() {
+        if (modoAccesoEntidad === 'AUTORIZADO') {
+            return document.getElementById('centro-select-autorizado')?.value || '';
+        }
+        return document.getElementById('centro-select')?.value || '';
+    }
+
     function mostrarFormulario() {
         if (!sesionEntidad) {
+            modoAccesoEntidad = 'ENTIDAD';
             mostrarLoginEntidad();
+            return;
+        }
+
+        if (modoAccesoEntidad === 'AUTORIZADO' || sesionEntidad.rol === 'AUTORIZADO') {
+            prepararFormularioAutorizado();
             return;
         }
 
         ocultarTodasLasVistas();
         resetearFormulario();
+        document.getElementById('grupo-filtro-autorizado').style.display = 'none';
+        document.getElementById('grupo-centro-normal').style.display = 'block';
+        document.getElementById('grupo-centro-autorizado').style.display = 'none';
 
-        const select = document.getElementById('centro-select');
-        select.innerHTML = '';
-        const option = document.createElement('option');
-        option.value = sesionEntidad.entidad;
-        option.textContent = sesionEntidad.entidad;
-        option.selected = true;
-        select.appendChild(option);
-        select.disabled = true;
-
-        document.getElementById('direccion').value = sesionEntidad.direccion || '';
-        document.getElementById('codigo_postal').value = sesionEntidad.cp || '';
-        document.getElementById('localidad').value = sesionEntidad.localidad || '';
-        document.getElementById('municipio').value = sesionEntidad.municipio || '';
+        const input = document.getElementById('centro-select');
+        actualizarSelectorEntidad();
+        input.value = sesionEntidad.entidad || '';
+        actualizarCentro();
 
         ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
             document.getElementById(id).readOnly = true;
@@ -2223,7 +2352,7 @@
 
         if (usuarioActual.rol === 'PUBLICO') {
             infoSpan.textContent = "Acceso Público";
-            btnSesion.textContent = "🔐 Acceso Personal (Técnicos / Empresas)";
+            btnSesion.textContent = "🔐 Acceso Personal (Técnicos / Administración / Empresas)";
             btnSesion.style.background = "#495057";
         } else {
             infoSpan.textContent = "👤 " + usuarioActual.nombre;
@@ -2291,10 +2420,18 @@
     }
 
     function actualizarCentro() {
-        const nombre = document.getElementById('centro-select').value;
+        const nombre = obtenerCentroSeleccionado();
         let datos = null;
 
-        if (tipoEntidadActual === 'ASOCIACION') {
+        if (modoAccesoEntidad === 'AUTORIZADO') {
+            if (tipoEntidadActual === 'ASOCIACION') {
+                datos = asociacionesVecinales.find(item => item['Nombre'] === nombre);
+            } else if (tipoEntidadActual === 'MUNICIPAL') {
+                datos = edificiosMunicipales.find(item => item['Nombre'] === nombre);
+            } else if (tipoEntidadActual === 'COLEGIO') {
+                datos = centrosEducativos[nombre];
+            }
+        } else if (tipoEntidadActual === 'ASOCIACION') {
             datos = asociacionesVecinales.find(item => item['Nombre'] === nombre);
         } else if (tipoEntidadActual === 'MUNICIPAL') {
             datos = edificiosMunicipales.find(item => item['Nombre'] === nombre);
@@ -2303,15 +2440,15 @@
         }
 
         if (datos) {
-            document.getElementById('direccion').value = datos['Dirección'] || datos.direccion || "";
-            document.getElementById('codigo_postal').value = datos['Código postal'] || datos.cp || "";
-            document.getElementById('localidad').value = datos['Localidad'] || datos.localidad || "";
-            document.getElementById('municipio').value = datos['Municipio'] || datos.municipio || "";
+            document.getElementById('direccion').value = datos['Dirección'] || datos.direccion || '';
+            document.getElementById('codigo_postal').value = datos['Código postal'] || datos.cp || '';
+            document.getElementById('localidad').value = datos['Localidad'] || datos.localidad || '';
+            document.getElementById('municipio').value = datos['Municipio'] || datos.municipio || '';
         } else {
-            document.getElementById('direccion').value = "";
-            document.getElementById('codigo_postal').value = "";
-            document.getElementById('localidad').value = "";
-            document.getElementById('municipio').value = "";
+            document.getElementById('direccion').value = '';
+            document.getElementById('codigo_postal').value = '';
+            document.getElementById('localidad').value = '';
+            document.getElementById('municipio').value = '';
         }
     }
 
@@ -2463,82 +2600,8 @@
         }
     }
 
-    async function consultarHistorialEntidad(){
-        const resDiv = document.getElementById('resultado-historial-entidad');
-        if (!resDiv) return;
-
-        if (!sesionEntidad || !sesionEntidad.token) {
-            resDiv.innerHTML = '<div style="margin-top:15px;padding:12px;background:#fff3cd;border:1px solid #ffecb5;border-radius:6px;text-align:center;">⚠️ La sesión ha caducado. Vuelva al inicio y acceda de nuevo.</div>';
-            return;
-        }
-
-        resDiv.innerHTML = '<div style="margin-top:15px;text-align:center;color:#666;">⏳ Cargando historial...</div>';
-
-        try {
-            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action: 'historialEntidad',
-                tokenSesion: sesionEntidad.token
-            }, 20000);
-
-            if (respuesta.status === 'ERROR' && respuesta.code === 'SESSION_INVALID') {
-                resDiv.innerHTML = '<div style="margin-top:15px;padding:12px;background:#fff3cd;border:1px solid #ffecb5;border-radius:6px;text-align:center;">⚠️ La sesión ha caducado. Vuelva al inicio y acceda de nuevo.</div>';
-                return;
-            }
-
-            if (respuesta.status !== 'SUCCESS') {
-                throw new Error(respuesta.message || 'No se pudo obtener el historial.');
-            }
-
-            const datos = Array.isArray(respuesta.data) ? respuesta.data : [];
-
-            if (!datos.length) {
-                resDiv.innerHTML = '<div style="margin-top:15px;padding:18px;text-align:center;background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;color:#666;">No hay incidencias registradas para esta entidad.</div>';
-                return;
-            }
-
-            const escapeHtml = (valor) => String(valor ?? '')
-                .replace(/&/g,'&amp;')
-                .replace(/</g,'&lt;')
-                .replace(/>/g,'&gt;')
-                .replace(/"/g,'&quot;')
-                .replace(/'/g,'&#039;');
-
-            const filas = datos.map(inc => {
-                const estado = escapeHtml(inc.estado || '');
-                const prioridad = String(inc.prioridad || '').toUpperCase() === 'URGENTE'
-                    ? '<span class="badge badge-urgente">URGENTE</span>'
-                    : '';
-                return `<tr>
-                    <td><strong style="color:#d9251d;">${escapeHtml(inc.ref)}</strong></td>
-                    <td>${escapeHtml(inc.fecha)}</td>
-                    <td>${escapeHtml(inc.oficio)}${inc.trabajo ? ' — <em>' + escapeHtml(inc.trabajo) + '</em>' : ''}</td>
-                    <td>${prioridad}</td>
-                    <td><strong>${estado}</strong></td>
-                    <td>${escapeHtml(inc.fechaFinalizacion || '—')}</td>
-                </tr>`;
-            }).join('');
-
-            resDiv.innerHTML = `
-                <div style="margin-top:15px;font-size:13px;font-weight:bold;color:#555;">${respuesta.total} ${respuesta.total === 1 ? 'incidencia registrada' : 'incidencias registradas'}</div>
-                <div class="tabla-contenedor">
-                    <table class="tabla-incidencias">
-                        <thead>
-                            <tr>
-                                <th>Referencia</th>
-                                <th>Fecha</th>
-                                <th>Oficio / Trabajo</th>
-                                <th>Prioridad</th>
-                                <th>Estado</th>
-                                <th>Finalización</th>
-                            </tr>
-                        </thead>
-                        <tbody>${filas}</tbody>
-                    </table>
-                </div>`;
-        } catch (err) {
-            console.error('Error al consultar historial:', err);
-            resDiv.innerHTML = '<div style="margin-top:15px;padding:12px;background:#f8d7da;border:1px solid #f5c2c7;border-radius:6px;text-align:center;">❌ No se ha podido consultar el historial. Compruebe la conexión e inténtelo de nuevo.</div>';
-        }
+    function consultarEstadoEntidad(){
+        consultarEstado('ref-buscar-entidad','pin-buscar-entidad','resultado-consulta-entidad');
     }
 
     async function validarDesdeCentro(ref, pin, accion){
@@ -2693,13 +2756,25 @@
         mostrarPanelTecnico();
     }
 
+    function toggleVisitaInicial() {
+        const select = document.getElementById('solicitar-visita');
+        const grupo = document.getElementById('grupo-motivo-visita');
+        const motivo = document.getElementById('motivo-visita');
+        if (!select || !grupo) return;
+        const activa = select.value === 'Sí';
+        grupo.classList.toggle('oculto', !activa);
+        if (!activa && motivo) motivo.value = '';
+    }
+
     async function enviarPorCorreo() {
-        const centro = document.getElementById('centro-select').value;
+        const centro = obtenerCentroSeleccionado();
         const oficio = document.getElementById('oficio-select').value;
         const tipo = document.getElementById('tipo-select').value;
         const responsable = document.getElementById('responsable').value.trim();
         const telefono = document.getElementById('telefono').value.trim();
         const emailResponsable = document.getElementById('email_responsable').value.trim();
+        const solicitarVisita = document.getElementById('solicitar-visita')?.value === 'Sí';
+        const motivoVisita = document.getElementById('motivo-visita')?.value.trim() || '';
 
         if (!centro || !oficio || !tipo) {
             alert("Por favor, seleccione el Centro, el Oficio y el Tipo de incidencia.");
@@ -2708,6 +2783,12 @@
 
         if (!responsable || !telefono || !emailResponsable || !emailResponsable.includes('@')) {
             alert("Por favor, complete Responsable, Teléfono y un correo electrónico válido.");
+            return;
+        }
+
+        if (solicitarVisita && !motivoVisita) {
+            alert("Ha solicitado una visita / valoración técnica. Indique el motivo.");
+            document.getElementById('motivo-visita')?.focus();
             return;
         }
 
@@ -2723,8 +2804,8 @@
         const datos = {
             action: 'crearIncidencia',
             tokenSesion: sesionEntidad.token,
-            tipoEntidad: sesionEntidad.tipoEntidad,
-            centro: sesionEntidad.entidad,
+            tipoEntidad: modoAccesoEntidad === 'AUTORIZADO' ? tipoEntidadActual : sesionEntidad.tipoEntidad,
+            centro: centro,
             direccion: document.getElementById('direccion').value,
             cp: document.getElementById('codigo_postal').value,
             localidad: document.getElementById('localidad').value,
@@ -2738,7 +2819,9 @@
             notificadaAntes: document.getElementById('notificada_antes').value,
             fecha: document.getElementById('fecha-campo').value,
             refAnterior: document.getElementById('ref-anterior-campo').value,
-            obsAdicionales: document.getElementById('observaciones_adicionales').value
+            obsAdicionales: document.getElementById('observaciones_adicionales').value,
+            solicitarVisita: solicitarVisita ? 'SI' : 'NO',
+            motivoVisita: motivoVisita
         };
 
         try {
@@ -2748,8 +2831,17 @@
                 document.getElementById('num-referencia-display').textContent = respuesta.ref;
                 document.getElementById('pin-display').textContent = respuesta.pin;
                 document.getElementById('caja-referencia').style.display = 'block';
+                const resultadoVisita2 = document.getElementById('resultado-visita-inicial');
+                if (resultadoVisita2) {
+                    if (solicitarVisita) {
+                        resultadoVisita2.textContent = '👷 Solicitud de visita / valoración técnica registrada junto con la incidencia.';
+                        resultadoVisita2.style.display = 'block';
+                    } else {
+                        resultadoVisita2.style.display = 'none';
+                    }
+                }
                 btnEnviar.parentElement.style.display = 'none';
-                alert("Notificación registrada con éxito.\n\nReferencia: " + respuesta.ref + "\nPIN: " + respuesta.pin);
+                alert("Notificación registrada con éxito." + (solicitarVisita ? "\n\nTambién se ha solicitado una visita / valoración técnica." : "") + "\n\nReferencia: " + respuesta.ref + "\nPIN: " + respuesta.pin);
                 setTimeout(() => window.print(), 300);
             } else {
                 throw new Error(respuesta.message || "El servidor no pudo registrar la incidencia.");
@@ -2764,8 +2856,23 @@
 
     function mostrarPanelTecnico() {
         ocultarTodasLasVistas();
-        cargarTablaTecnicoDesdeSheet();
+
+        const titulo = document.getElementById('tecnico-panel-titulo');
+        const rolBadge = document.getElementById('tecnico-panel-rol');
+        const esAdmin = usuarioActual.rol === 'ADMIN';
+
+        if (titulo) titulo.textContent = esAdmin ? 'Panel de Administración' : 'Panel de Control Técnico';
+        if (rolBadge) {
+            rolBadge.textContent = esAdmin
+                ? 'ADMINISTRACIÓN · ACCESO GLOBAL'
+                : 'TÉCNICO · OFICIOS ASIGNADOS';
+            rolBadge.style.background = esAdmin ? '#fff3cd' : '#e9ecef';
+            rolBadge.style.color = esAdmin ? '#664d03' : '#495057';
+        }
+
         document.getElementById('vista-tecnico').classList.remove('oculto');
+        cargarTablaTecnicoDesdeSheet();
+        actualizarContadorVisitas();
         window.scrollTo(0, 0);
     }
 
@@ -2779,7 +2886,6 @@
                 todasLasIncidenciasTecnico = ordenarIncidenciasPorPrioridadYFinalizacion(respuesta.data || []);
                 actualizarKpis(todasLasIncidenciasTecnico);
                 renderizarTrabajosEnCurso(todasLasIncidenciasTecnico);
-                await cargarSolicitudesInspeccion();
                 renderizarTablaTecnico(todasLasIncidenciasTecnico);
             } else {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ Error al obtener datos.</td></tr>';
@@ -3116,67 +3222,159 @@
         }
     }
 
-    async function cargarSolicitudesInspeccion(){
-        const contenedor = document.getElementById('lista-visitas-tecnicas');
-        const contador = document.getElementById('contador-visitas-tecnicas');
-        if (!contenedor || !contador) return;
-        try {
-            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action:'listarSolicitudesInspeccion', tokenSesion:usuarioActual.tokenSesion
-            }, 20000);
-            if (r.status !== 'SUCCESS') throw new Error(r.message || 'No se pudieron cargar las visitas.');
-            const lista = Array.isArray(r.data) ? r.data : [];
-            contador.textContent = lista.length + (lista.length === 1 ? ' pendiente' : ' pendientes');
-            if (!lista.length) {
-                contenedor.innerHTML = '<div style="font-size:12px;color:#777;">No hay visitas o inspecciones pendientes.</div>';
-                return;
-            }
-            contenedor.innerHTML = lista.map(v => `
-                <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:11px 12px;">
-                    <div style="font-weight:bold;font-size:13px;color:#343a40;">${v.ref} · ${v.oficio || 'Oficio pendiente de determinar'}</div>
-                    <div style="font-size:12px;margin-top:4px;color:#495057;">🏫 ${v.entidad || 'Entidad no indicada'}</div>
-                    <div style="font-size:12px;margin-top:4px;color:#6c757d;">📅 Solicitud: ${formatearFechaVisible(v.fecha)}</div>
-                    <div style="font-size:12px;margin-top:6px;color:#343a40;"><strong>Motivo:</strong> ${v.motivo || 'Sin indicar'}</div>
-                    <button class="btn-accion-tabla" style="background:#6f42c1;color:white;margin-top:9px;" onclick="abrirResultadoInspeccion('${String(v.ref).replace(/'/g, "\\'")}')">🔎 Registrar visita</button>
-                </div>`).join('');
-        } catch (err) {
-            contenedor.innerHTML = '<div style="font-size:12px;color:#dc3545;">❌ No se pudieron cargar las visitas pendientes.</div>';
-            contador.textContent = 'Error';
-        }
-    }
+    
+async function mostrarPanelVisitas() {
+    ocultarTodasLasVistas();
+    document.getElementById('vista-visitas').classList.remove('oculto');
+    window.scrollTo(0, 0);
+    await cargarPanelVisitas();
+}
 
-    async function abrirResultadoInspeccion(ref){
-        const opcion = prompt(
-            'Resultado de la visita técnica:\n\n' +
-            '1 = No requiere actuación\n' +
-            '2 = Requiere una especialidad\n' +
-            '3 = Requiere varias especialidades\n' +
-            '4 = Actuación inmediata / urgente', '1');
-        if (!opcion) return;
-        const mapa = {'1':'NO_ACCION','2':'UNA_ESPECIALIDAD','3':'VARIAS_ESPECIALIDADES','4':'URGENTE'};
-        const resultado = mapa[String(opcion).trim()];
-        if (!resultado) { alert('Seleccione 1, 2, 3 o 4.'); return; }
-        let oficios = '';
-        if (resultado !== 'NO_ACCION') {
-            oficios = prompt('Oficio(s) requerido(s), separados por comas:', '') || '';
+async function actualizarContadorVisitas() {
+    const contador = document.getElementById('contador-visitas-pendientes');
+    try {
+        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+            action: 'listarSolicitudesInspeccion',
+            tokenSesion: usuarioActual.tokenSesion
+        }, 20000);
+
+        if (r && (r.status === 'OK' || r.status === 'SUCCESS')) {
+            const lista = Array.isArray(r.solicitudes)
+                ? r.solicitudes
+                : (Array.isArray(r.data) ? r.data : []);
+            if (contador) contador.textContent = lista.length ? ' (' + lista.length + ')' : '';
+            return lista.length;
         }
-        const comentario = prompt('Observaciones de la visita (opcional):','') || '';
-        try {
-            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action:'registrarResultadoInspeccion', ref:ref, resultado:resultado,
-                oficiosRequeridos:oficios.trim(), observacion:comentario.trim(),
-                tokenSesion:usuarioActual.tokenSesion
-            }, 20000);
-            if (r.status !== 'SUCCESS') throw new Error(r.message || 'No se pudo registrar el resultado.');
-            alert('✅ Resultado de la visita registrado.');
-            await cargarSolicitudesInspeccion();
+    } catch (err) {}
+
+    if (contador) contador.textContent = '';
+    return null;
+}
+
+async function cargarPanelVisitas() {
+    const contenedor = document.getElementById('lista-visitas-solicitadas');
+    const contador = document.getElementById('contador-visitas-panel');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = '<div style="text-align:center; padding:25px; color:#666;">⏳ Cargando solicitudes de visita / inspección...</div>';
+    if (contador) contador.textContent = 'Comprobando solicitudes pendientes...';
+
+    try {
+        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+            action: 'listarSolicitudesInspeccion',
+            tokenSesion: usuarioActual.tokenSesion
+        }, 20000);
+
+        if (!r || (r.status !== 'OK' && r.status !== 'SUCCESS')) {
+            throw new Error((r && r.message) || 'No se pudieron obtener las solicitudes.');
+        }
+
+        const lista = Array.isArray(r.solicitudes)
+            ? r.solicitudes
+            : (Array.isArray(r.data) ? r.data : []);
+
+        if (contador) {
+            contador.textContent = lista.length +
+                (lista.length === 1 ? ' solicitud pendiente.' : ' solicitudes pendientes.');
+        }
+
+        const top = document.getElementById('contador-visitas-pendientes');
+        if (top) top.textContent = lista.length ? ' (' + lista.length + ')' : '';
+
+        if (!lista.length) {
+            contenedor.innerHTML = '<div style="text-align:center; padding:30px; color:#777; background:#f8f9fa; border:1px solid #dee2e6; border-radius:7px;">No hay visitas / inspecciones pendientes.</div>';
+            return;
+        }
+
+        contenedor.innerHTML = lista.map((s) => {
+            const tipo = s.tipoSolicitud || s.tipo || 'INSPECCIÓN';
+            const motivo = s.motivo || 'Sin motivo indicado.';
+            const entidad = s.entidad || s.solicitante || 'Entidad no indicada';
+            const fecha = formatearFechaVisible(s.fechaSolicitud);
+            const ref = s.ref || '';
+            const refJs = String(ref).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+            return `
+                <div class="visita-card">
+                    <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+                        <div>
+                            <strong style="font-size:15px; color:#343a40;">${ref || 'Sin referencia'}</strong>
+                            <div style="margin-top:4px;"><span class="badge badge-visita">${tipo}</span></div>
+                        </div>
+                        <div style="font-size:12px; color:#6c757d;"><strong>Solicitud:</strong> ${fecha}</div>
+                    </div>
+                    <div class="visita-grid">
+                        <div class="visita-dato"><strong>Entidad / centro</strong>${entidad}</div>
+                        <div class="visita-dato"><strong>Oficio</strong>${s.oficio || 'No indicado'}</div>
+                        <div class="visita-dato"><strong>Estado</strong>${s.estado || 'PENDIENTE'}</div>
+                        <div class="visita-dato"><strong>ID inspección</strong>${s.idInspeccion || '—'}</div>
+                    </div>
+                    <div style="margin-top:10px; padding:10px; background:#fff8f8; border:1px solid #f0d8dc; border-radius:5px; font-size:12px; line-height:1.5;">
+                        <strong>Motivo de la visita / valoración:</strong><br>${motivo}
+                    </div>
+                    <div class="visita-acciones">
+                        <button type="button" class="btn-panel-nav btn-panel-visitas"
+                                onclick="registrarResultadoInspeccionPanel('${refJs}')">
+                            📝 Registrar resultado
+                        </button>
+                    </div>
+                </div>`;
+        }).join('');
+    } catch (err) {
+        if (contador) contador.textContent = 'No se pudieron cargar las solicitudes.';
+        contenedor.innerHTML = '<div style="text-align:center; padding:25px; color:#d9251d; background:#fff5f5; border:1px solid #f1b0b7; border-radius:7px;">❌ ' +
+            (err.message || 'Error de conexión al cargar las visitas.') + '</div>';
+    }
+}
+
+async function registrarResultadoInspeccionPanel(ref) {
+    const opcion = prompt(
+        'Resultado de la visita / valoración técnica:\n\n' +
+        '1 = No requiere actuación\n' +
+        '2 = Requiere una especialidad\n' +
+        '3 = Requiere varias especialidades\n' +
+        '4 = Actuación inmediata / urgente',
+        '1'
+    );
+    if (!opcion) return;
+
+    const mapa = {
+        '1':'NO_ACCION',
+        '2':'UNA_ESPECIALIDAD',
+        '3':'VARIAS_ESPECIALIDADES',
+        '4':'URGENTE'
+    };
+    const resultado = mapa[String(opcion).trim()];
+    if (!resultado) { alert('Seleccione 1, 2, 3 o 4.'); return; }
+
+    const observacion = prompt('Observaciones de la visita / valoración (opcional):', '') || '';
+    const oficios = (resultado === 'UNA_ESPECIALIDAD' || resultado === 'VARIAS_ESPECIALIDADES' || resultado === 'URGENTE')
+        ? (prompt('Oficio(s) requerido(s), separados por comas:', '') || '')
+        : '';
+
+    try {
+        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+            action:'registrarResultadoInspeccion',
+            ref:ref,
+            resultado:resultado,
+            oficiosRequeridos:oficios.trim(),
+            observacion:observacion.trim(),
+            tokenSesion:usuarioActual.tokenSesion
+        }, 20000);
+
+        if (r && r.status === 'SUCCESS') {
+            alert('✅ Resultado de la visita / valoración registrado.');
+            await cargarPanelVisitas();
             await cargarTablaTecnicoDesdeSheet();
-        } catch(err) {
-            alert('❌ ' + (err.message || 'Error al registrar la visita.'));
+        } else {
+            alert('❌ ' + ((r && r.message) || 'No se pudo registrar el resultado.'));
         }
+    } catch (err) {
+        alert('❌ Error de conexión al registrar el resultado.');
     }
+}
 
-    async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
+async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
         const motivo = (motivoInicial || prompt('Indique el motivo de la solicitud de valoración técnica:', '')) || '';
         if (!motivo.trim()) return;
         try {
