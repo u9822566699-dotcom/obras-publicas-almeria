@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- SIMUN V18.01 - VISITA INICIAL -->
+<!-- SIMUN V19.01 - RECHAZO Y VALORACION DE VISITAS -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMUN V18 - Sistema de Incidencias Municipales</title>
+    <title>SIMUN V19 - Sistema de Incidencias Municipales</title>
     
     <!-- Librería para exportación de PDF dinámico si se requiere -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -683,6 +683,21 @@
 </div>
 
 <!-- MODAL PARA COMPLETAR INCIDENCIA -->
+<div id="visita-resultado-modal" class="modal-overlay oculto" style="z-index:10005;">
+    <div class="modal-box" style="max-width:650px;">
+        <h3>Valoración de visita técnica</h3>
+        <input type="hidden" id="visita-resultado-ref">
+        <div class="form-group"><label for="visita-valoracion">Valoración de la visita y de la incidencia *</label><textarea id="visita-valoracion" style="min-height:110px;" placeholder="Describa lo observado durante la visita..."></textarea></div>
+        <div class="form-group"><label for="visita-solucion">Solución propuesta *</label><textarea id="visita-solucion" style="min-height:100px;" placeholder="Indique la solución propuesta..."></textarea></div>
+        <p style="font-size:13px;">Tras redactar ambos textos, seleccione la resolución:</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn-accion-tabla" style="background:#dc3545;color:white;flex:1;" onclick="guardarResultadoVisita('URGENTE')">🚨 Urgente</button>
+            <button type="button" class="btn-accion-tabla" style="background:#e0a800;color:#222;flex:1;" onclick="guardarResultadoVisita('PENDIENTE')">⏳ Pendiente</button>
+            <button type="button" class="btn-accion-tabla" style="background:#198754;color:white;flex:1;" onclick="guardarResultadoVisita('COMPLETADA')">✓ Completada</button>
+        </div>
+        <button type="button" class="btn-volver" style="margin-top:15px;" onclick="cerrarResultadoVisita()">Cancelar</button>
+    </div>
+</div>
 <div id="modal-completar" class="modal-overlay oculto">
     <div class="modal-box">
         <h3>✓ Finalizar intervención e informe</h3>
@@ -992,7 +1007,7 @@
 </div>
 
 <script>
-    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbxJ044yoKwSOw8c1hUL01mrTLXdiSSP5YqRHIC05Ylnm28pvc33jeLDTa2N2wtIe4VTkg/exec";
+    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbxAl8b-0Vv_IYnUTjNHT8F-7npmC1MPLZlsY9KvW7AVN-CjU9QTce2LztyNNHLrQx8bmA/exec";
 
     const mapaOficiosUsuarios = {
         "fontaneria": "Fontanería",
@@ -2555,6 +2570,10 @@
                     ? `<div style="margin-top:10px;"><strong>🔄 Historial de oficios:</strong><div style="background:#f8f9fa;padding:8px 12px;white-space:pre-line;font-size:12px;margin-top:4px;">${respuesta.historialOficios}</div></div>`
                     : '';
 
+                const motivoRechazo = respuesta.motivoRechazoTecnico
+                    ? `<div style="margin-top:12px;padding:12px;background:#fff3f3;border-left:4px solid #dc3545;"><strong>Motivo del rechazo técnico:</strong><div style="white-space:pre-line;margin-top:5px;">${escaparHTMLSIMUN(respuesta.motivoRechazoTecnico)}</div></div>` : '';
+                const valoracionVisita = respuesta.valoracionVisita
+                    ? `<div style="margin-top:12px;padding:12px;background:#f0f5ff;border-left:4px solid #0d6efd;"><strong>Valoración de la visita:</strong><div style="white-space:pre-line;">${escaparHTMLSIMUN(respuesta.valoracionVisita.valoracion)}</div><strong>Solución propuesta:</strong><div style="white-space:pre-line;">${escaparHTMLSIMUN(respuesta.valoracionVisita.solucion)}</div></div>` : '';
                 const puedeValidarCentro = !!respuesta.puedeValidar || ['Completada','Pendiente de validación'].includes(String(respuesta.estado || ''));
 
                 // Guardamos el PIN usado en esta consulta dentro de la propia tarjeta.
@@ -2579,7 +2598,7 @@
                     </div>`
                     : '';
 
-                resDiv.innerHTML = `<div style="border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><strong style="color:#d9251d;font-size:16px;">${respuesta.ref}</strong><span style="background:#e8f5e9;color:#0f5132;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;">📅 Registrada: ${respuesta.fecha}</span></div><div style="font-size:13px;line-height:1.6;"><p style="margin:4px 0;"><strong>Centro:</strong> ${respuesta.centro}</p><p style="margin:4px 0;"><strong>Oficio / Trabajo:</strong> ${respuesta.oficio} — <em>${respuesta.trabajo}</em></p><p style="margin:4px 0;"><strong>Estado actual:</strong> <span style="font-weight:bold;color:#d9251d;">${respuesta.estado}</span></p>${['Pendiente','Aceptada por la empresa','Inicio'].includes(respuesta.estado)?cola:''}${historial}<hr style="border:0;border-top:1px dashed #ccc;margin:10px 0;"><div><p style="margin:4px 0;color:#555;"><strong>Comentario final de la empresa:</strong></p><div style="background:#f8f9fa;padding:8px 12px;border-left:3px solid #28a745;font-style:italic;font-size:12px;white-space:pre-line;">${respuesta.comentarioFinalEmpresa || 'Sin comentario final de empresa.'}</div></div>${validacion}</div>`;
+                resDiv.innerHTML = `<div style="border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><strong style="color:#d9251d;font-size:16px;">${respuesta.ref}</strong><span style="background:#e8f5e9;color:#0f5132;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;">📅 Registrada: ${respuesta.fecha}</span></div><div style="font-size:13px;line-height:1.6;"><p style="margin:4px 0;"><strong>Centro:</strong> ${respuesta.centro}</p><p style="margin:4px 0;"><strong>Oficio / Trabajo:</strong> ${respuesta.oficio} — <em>${respuesta.trabajo}</em></p><p style="margin:4px 0;"><strong>Estado actual:</strong> <span style="font-weight:bold;color:#d9251d;">${respuesta.estado}</span></p>${['Pendiente','Aceptada por la empresa','Inicio'].includes(respuesta.estado)?cola:''}${historial}${motivoRechazo}${valoracionVisita}<hr style="border:0;border-top:1px dashed #ccc;margin:10px 0;"><div><p style="margin:4px 0;color:#555;"><strong>Comentario final de la empresa:</strong></p><div style="background:#f8f9fa;padding:8px 12px;border-left:3px solid #28a745;font-style:italic;font-size:12px;white-space:pre-line;">${respuesta.comentarioFinalEmpresa || 'Sin comentario final de empresa.'}</div></div>${validacion}</div>`;
             } else if (respuesta.status === "WRONG_PIN") {
                 resDiv.style.background = "#fff3cd";
                 resDiv.style.border = "1px solid #ffebaa";
@@ -3116,6 +3135,7 @@
                     ${!finalizada ? (String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA'
                         ? '<div style="margin-top:6px; font-size:12px; font-weight:bold; color:#198754;">🛠️ ASIGNADA A BRIGADA</div>'
                         : `<button class="btn-accion-tabla" style="background:#198754; color:white; margin-top:6px;" onclick="asignarIncidenciaABrigada('${inc.ref}')">🛠️ Brigada</button>`) : ''}
+                    ${!finalizada && inc.estado !== 'Rechazada por técnico' ? `<button class="btn-accion-tabla btn-acc-rechazar" style="margin-top:6px;" onclick="rechazarIncidenciaTecnicoUI('${inc.ref}')">✕ Rechazar</button>` : ''}
                     ${botonInforme}
                 </td>
             `;
@@ -3164,6 +3184,19 @@
                     <div style="font-size:11px; margin-top:4px; color:#6c757d;">Inicio: <strong>${formatearFechaVisible(inc.fechaInicio)}</strong></div>
                 </div>`;
         }).join('');
+    }
+
+    async function rechazarIncidenciaTecnicoUI(ref) {
+        const motivo = prompt('Justificación obligatoria del rechazo de la incidencia ' + ref + ':');
+        if (motivo === null) return;
+        if (!motivo.trim()) { alert('Debe justificar el rechazo.'); return; }
+        if (!confirm('¿Confirmar el rechazo de la incidencia ' + ref + '?')) return;
+        try {
+            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {action:'rechazarIncidenciaTecnico',ref:ref,motivo:motivo.trim(),tokenSesion:usuarioActual.tokenSesion},20000);
+            if (r.status !== 'SUCCESS') { alert('❌ ' + (r.message || 'No se pudo rechazar.')); return; }
+            await cargarTablaTecnicoDesdeSheet();
+            alert('Rechazo registrado. El responsable podrá consultar el motivo con su REF y PIN.');
+        } catch(err) { alert('❌ Error de conexión al registrar el rechazo.'); }
     }
 
     async function asignarIncidenciaABrigada(ref) {
@@ -3315,7 +3348,7 @@ async function cargarPanelVisitas() {
                     </div>
                     <div class="visita-acciones">
                         <button type="button" class="btn-panel-nav btn-panel-visitas"
-                                onclick="registrarResultadoInspeccionPanel('${refJs}')">
+                                onclick="abrirResultadoVisita('${refJs}')">
                             📝 Registrar resultado
                         </button>
                     </div>
@@ -3326,6 +3359,33 @@ async function cargarPanelVisitas() {
         contenedor.innerHTML = '<div style="text-align:center; padding:25px; color:#d9251d; background:#fff5f5; border:1px solid #f1b0b7; border-radius:7px;">❌ ' +
             (err.message || 'Error de conexión al cargar las visitas.') + '</div>';
     }
+}
+
+function escaparHTMLSIMUN(texto) {
+    return String(texto ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function abrirResultadoVisita(ref) {
+    document.getElementById('visita-resultado-ref').value = ref;
+    document.getElementById('visita-valoracion').value = '';
+    document.getElementById('visita-solucion').value = '';
+    document.getElementById('visita-resultado-modal').classList.remove('oculto');
+}
+function cerrarResultadoVisita() { document.getElementById('visita-resultado-modal').classList.add('oculto'); }
+async function guardarResultadoVisita(resultado) {
+    const ref = document.getElementById('visita-resultado-ref').value;
+    const valoracion = document.getElementById('visita-valoracion').value.trim();
+    const solucion = document.getElementById('visita-solucion').value.trim();
+    if (!valoracion || !solucion) { alert('Debe redactar la valoración y la solución propuesta.'); return; }
+    if (!confirm('¿Registrar la valoración y declarar la incidencia ' + resultado.toLowerCase() + '?')) return;
+    try {
+        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {action:'registrarResultadoInspeccion',ref,resultado,valoracion,solucion,observacion:valoracion + '\nSolución propuesta: ' + solucion,tokenSesion:usuarioActual.tokenSesion},20000);
+        if (r.status !== 'SUCCESS') { alert('❌ ' + (r.message || 'No se pudo guardar.')); return; }
+        cerrarResultadoVisita();
+        await cargarPanelVisitas();
+        await cargarTablaTecnicoDesdeSheet();
+        alert('Valoración y resolución registradas.');
+    } catch(err) { alert('❌ Error de conexión al registrar la visita.'); }
 }
 
 async function registrarResultadoInspeccionPanel(ref) {
