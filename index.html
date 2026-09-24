@@ -1029,253 +1029,33 @@
         "sistemas_contra_incendios": "Sistemas Contra incendios"
     };
 
-    const asociacionesVecinales = [
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Araceli",
-        "Dirección": "Calle Virgen de la Piedad, s/n",
-        "Código postal": "4008",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Barrio Alto",
-        "Dirección": "Calle de la Almedina, s/n",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Cabo De Gata",
-        "Dirección": "Calle Santa Elena, s/n",
-        "Código postal": "4150",
-        "Localidad": "Cabo de Gata"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Castell Del Rey",
-        "Dirección": "Calle del Castillo, s/n",
-        "Código postal": "4002",
-        "Localidad": "Castell del Rey"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Ciudad Jardín",
-        "Dirección": "Plaza de la Juventud, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Cordoneros",
-        "Dirección": "Calle Cordoneros, s/n",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Cortijo Grande",
-        "Dirección": "Calle Recinto Ferial, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Costacabana",
-        "Dirección": "Paseo Marítimo de Costacabana, s/n",
-        "Código postal": "4120",
-        "Localidad": "Costacabana"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Cruz De Caravaca",
-        "Dirección": "Calle de la Cruz, s/n",
-        "Código postal": "4008",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Cueva De Los Medina",
-        "Dirección": "Calle Principal Cueva de los Medina, s/n",
-        "Código postal": "4130",
-        "Localidad": "Cueva de los Medina"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal El Alquian I",
-        "Dirección": "Calle Magallanes, s/n",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal El Alquian II",
-        "Dirección": "Calle de la Marina, s/n",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal El Diezmo",
-        "Dirección": "Calle del Diezmo, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal El Puche",
-        "Dirección": "Avenida de Manolo Escobar, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal El Toyo Retamar",
-        "Dirección": "Avenida de los Juegos de Almería, s/n",
-        "Código postal": "4131",
-        "Localidad": "Retamar"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal El Zapillo",
-        "Dirección": "Calle de Jaén, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal La Chanca",
-        "Dirección": "Calle de la Chanca, s/n",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal La Cañada",
-        "Dirección": "Plaza Antonio de Torres, s/n",
-        "Código postal": "4120",
-        "Localidad": "La Cañada de San Urbano"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Las Chocillas",
-        "Dirección": "Calle de las Chocillas, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Los Ángeles",
-        "Dirección": "Plaza de los Ángeles, s/n",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Los Molinos",
-        "Dirección": "Calle de la Molinera, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Mediterráneo Oliveros",
-        "Dirección": "Calle de Oliveros, s/n",
-        "Código postal": "4004",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Nueva Almería",
-        "Dirección": "Calle de la Almadraba, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Nueva Andalucía",
-        "Dirección": "Calle de la Italia, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Parque Nicolás Salmerón",
-        "Dirección": "Parque Nicolás Salmerón, s/n",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Piedras Redondas",
-        "Dirección": "Calle Sierra de Gredos, s/n",
-        "Código postal": "4008",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Quemadero Fuentecica",
-        "Dirección": "Plaza del Quemadero, s/n",
-        "Código postal": "4003",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Regiones I",
-        "Dirección": "Calle de Grecia, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Regiones II",
-        "Dirección": "Calle de Turquía, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal San Luis",
-        "Dirección": "Calle de San Luis, s/n",
-        "Código postal": "4008",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal San Vicente",
-        "Dirección": "Calle de San Vicente, s/n",
-        "Código postal": "4120",
-        "Localidad": "La Cañada de San Urbano"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Santa Isabel",
-        "Dirección": "Calle de Santa Isabel, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Torrecárdenas I",
-        "Dirección": "Calle de la Paz, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Torrecárdenas II",
-        "Dirección": "Calle del Bienestar, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Asociación Vecinal (según PDF)",
-        "Nombre": "Centro Vecinal Venta Gaspar",
-        "Dirección": "Calle de la Venta, s/n",
-        "Código postal": "4120",
-        "Localidad": "Venta Gaspar"
+    // Las asociaciones se cargan desde la hoja Accesos de Google Sheets.
+    // No se mantienen direcciones ni nombres de asociaciones hardcodeados en HTML.
+    let asociacionesVecinales = [];
+    let asociacionesCargadas = false;
+
+    async function cargarAsociacionesDesdeSheet() {
+        if (asociacionesCargadas) return asociacionesVecinales;
+
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarAsociaciones'
+            }, 20000);
+
+            if (respuesta.status !== 'SUCCESS' || !Array.isArray(respuesta.data)) {
+                throw new Error(respuesta.message || 'No se pudieron cargar las asociaciones.');
+            }
+
+            asociacionesVecinales = respuesta.data;
+            asociacionesCargadas = true;
+            return asociacionesVecinales;
+        } catch (err) {
+            asociacionesVecinales = [];
+            asociacionesCargadas = false;
+            console.error('Error al cargar asociaciones desde Google Sheets:', err);
+            throw err;
+        }
     }
-];
 
     const edificiosMunicipales = [
     {
@@ -2022,7 +1802,7 @@
             }
 
             resetearFormulario();
-            actualizarSelectorEntidad();
+            await actualizarSelectorEntidad();
             select.value = respuesta.entidad || '';
             actualizarCentro();
 
@@ -2061,11 +1841,10 @@
 
     function seleccionarTipoEntidad(tipo) {
         tipoEntidadActual = tipo;
-        actualizarSelectorEntidad();
         mostrarFormulario();
     }
 
-    function actualizarSelectorEntidad() {
+    async function actualizarSelectorEntidad() {
         const input = document.getElementById('centro-select');
         const lista = document.getElementById('lista-entidades');
         const label = document.getElementById('label-entidad');
@@ -2079,6 +1858,11 @@
             seccion.textContent = 'Datos de la asociación vecinal';
             label.textContent = 'Asociación (MD) *';
             input.placeholder = 'Escriba o seleccione la asociación vecinal...';
+            try {
+                await cargarAsociacionesDesdeSheet();
+            } catch (err) {
+                input.placeholder = 'No se han podido cargar las asociaciones';
+            }
             nombres = asociacionesVecinales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipoEntidadActual === 'MUNICIPAL') {
             seccion.textContent = 'Datos del edificio o dependencia municipal';
@@ -2114,7 +1898,7 @@
             // operaciones que puedan escribir datos para evitar duplicados.
             const accionesReintentables = new Set([
                 'login', 'loginEntidad', 'consultar',
-                'listarIncidenciasNuevas', 'listarTodoTecnico',
+                'listarIncidenciasNuevas', 'listarAsociaciones', 'listarTodoTecnico',
                 'listarPorOficio', 'listarBrigada', 'listarSolicitudesInspeccion'
             ]);
             const maxIntentos = accionesReintentables.has(action) ? 3 : 1;
@@ -2269,7 +2053,7 @@
         window.scrollTo(0, 0);
     }
 
-    function actualizarSelectorAutorizado() {
+    async function actualizarSelectorAutorizado() {
         const tipo = document.getElementById('filtro-tipo-autorizado').value;
         const select = document.getElementById('centro-select-autorizado');
         const label = document.getElementById('label-centro-autorizado');
@@ -2281,6 +2065,12 @@
         let nombres = [];
         if (tipo === 'ASOCIACION') {
             label.textContent = 'Asociación vecinal *';
+            try {
+                await cargarAsociacionesDesdeSheet();
+            } catch (err) {
+                select.innerHTML = '<option value="">No se han podido cargar las asociaciones...</option>';
+                return;
+            }
             nombres = asociacionesVecinales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipo === 'MUNICIPAL') {
             label.textContent = 'Edificio o dependencia municipal *';
@@ -2329,10 +2119,10 @@
         document.getElementById('grupo-centro-autorizado').style.display = 'none';
 
         const input = document.getElementById('centro-select');
-        actualizarSelectorEntidad();
-        input.value = sesionEntidad.entidad || '';
-        actualizarCentro();
-
+        actualizarSelectorEntidad().then(() => {
+            input.value = sesionEntidad.entidad || '';
+            actualizarCentro();
+        });
         ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
             document.getElementById(id).readOnly = true;
         });
@@ -2449,6 +2239,15 @@
             }
         } else if (tipoEntidadActual === 'ASOCIACION') {
             datos = asociacionesVecinales.find(item => item['Nombre'] === nombre);
+            if (!datos && sesionEntidad && sesionEntidad.entidad === nombre) {
+                datos = {
+                    Nombre: sesionEntidad.entidad,
+                    Dirección: sesionEntidad.direccion || '',
+                    'Código postal': sesionEntidad.cp || '',
+                    Localidad: sesionEntidad.localidad || '',
+                    Municipio: sesionEntidad.municipio || ''
+                };
+            }
         } else if (tipoEntidadActual === 'MUNICIPAL') {
             datos = edificiosMunicipales.find(item => item['Nombre'] === nombre);
         } else {
