@@ -619,7 +619,7 @@
 
     <div class="instructions-box" style="background:#e8f5e9; border-color:#b7dfba; margin-bottom:15px;">
         <strong>🛠️ Brigada municipal</strong><br>
-        En este panel aparecen únicamente las incidencias que hayan sido asignadas a la Brigada por un técnico municipal o por el administrador.
+        Aquí aparecen únicamente las incidencias que los técnicos municipales o Administración hayan enviado a la Brigada. La Brigada no trabaja con un oficio asignado: recibe directamente los trabajos que le sean derivados y puede devolverlos al listado general o pasarlos a un oficio concreto.
     </div>
 
     <div class="tabla-contenedor">
@@ -628,9 +628,10 @@
                 <tr>
                     <th style="width:120px;">Ref / PIN</th>
                     <th>Centro / Ubicación</th>
-                    <th>Oficio / Trabajo</th>
+                    <th>Trabajo</th>
                     <th>Responsable / Contacto</th>
-                    <th>Estado / Fechas</th>
+                    <th>Detalle</th>
+                    <th>Estado / Acciones</th>
                 </tr>
             </thead>
             <tbody id="tabla-brigada-body">
@@ -2917,6 +2918,7 @@
                     ${inc.comentarioFinalEmpresa ? `<div style="margin-top:6px; color:#198754;"><strong>Comentario final empresa:</strong><br>${inc.comentarioFinalEmpresa}</div>` : ''}
                     ${inc.comentarioFinalTecnico ? `<div style="margin-top:6px; color:#6f42c1;"><strong>Comentario final técnico:</strong><br>${inc.comentarioFinalTecnico}</div>` : ''}
                     ${inc.motivoRevisionTecnica ? `<div style="margin-top:6px; color:#fd7e14;"><strong>Revisión:</strong><br>${inc.motivoRevisionTecnica}</div>` : ''}
+                    ${inc.motivoRechazoBrigada ? `<div style="margin-top:6px; color:#dc3545;"><strong>Rechazo de Brigada:</strong><br>${inc.motivoRechazoBrigada}</div>` : ''}
                     ${inc.historialOficios ? `<div style="margin-top:6px; color:#0d6efd;"><strong>Historial de oficios:</strong><br><span style="white-space:pre-line;">${inc.historialOficios}</span></div>` : ''}
                 </td>
                 <td style="font-size:12px; line-height:1.55;">
@@ -3430,7 +3432,7 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
 
     async function cargarTablaBrigadaDesdeSheet() {
         const tbody = document.getElementById('tabla-brigada-body');
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#666;">⏳ Cargando trabajos de Brigada...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#666;">⏳ Cargando trabajos de Brigada...</td></tr>';
 
         try {
             const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
@@ -3439,7 +3441,7 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
             }, 20000);
 
             if (respuesta.status !== 'SUCCESS') {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#d9251d;">❌ ' + (respuesta.message || 'No se han podido cargar los trabajos.') + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ ' + (respuesta.message || 'No se han podido cargar los trabajos.') + '</td></tr>';
                 return;
             }
 
@@ -3447,7 +3449,7 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
             tbody.innerHTML = '';
 
             if (!datos.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:25px; color:#777;">No hay incidencias asignadas a Brigada.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:25px; color:#777;">No hay incidencias asignadas a Brigada.</td></tr>';
                 return;
             }
 
@@ -3456,26 +3458,76 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
                 const prioridad = String(inc.prioridad || '').toUpperCase() === 'URGENTE'
                     ? '<span class="badge badge-urgente">🚨 URGENTE</span>'
                     : '<span class="badge badge-normal">NORMAL</span>';
-                let estado = '<span class="badge badge-pendiente">PENDIENTE</span>';
-                if (inc.estado === 'Aceptada por la empresa') estado = '<span class="badge badge-aceptada">ACEPTADA</span>';
-                if (inc.estado === 'Inicio') estado = '<span class="badge badge-inicio">EN INICIO</span>';
-                if (inc.estado === 'Completada') estado = '<span class="badge badge-completada">✓ COMPLETADA</span>';
+
+                let columnaAcciones = '';
+                if (inc.estado === 'Pendiente') {
+                    columnaAcciones = `
+                        <span class="badge badge-pendiente" style="display:block; margin-bottom:8px;">PENDIENTE</span>
+                        <button class="btn-accion-tabla btn-acc-aceptar" onclick="cambiarEstadoIncidenciaSheet('${inc.ref}', 'Aceptada por Brigada')">✓ Aceptar</button>
+                        <button class="btn-accion-tabla btn-acc-rechazar" onclick="rechazarIncidenciaBrigadaUI('${inc.ref}')">✕ Rechazar</button>
+                    `;
+                } else if (inc.estado === 'Aceptada por Brigada') {
+                    columnaAcciones = `
+                        <span class="badge badge-aceptada" style="display:block; margin-bottom:8px;">ACEPTADA</span>
+                        <button class="btn-accion-tabla btn-acc-inicio" onclick="cambiarEstadoIncidenciaSheet('${inc.ref}', 'Inicio')">▶ Iniciar Trabajo</button>
+                    `;
+                } else if (inc.estado === 'Inicio') {
+                    columnaAcciones = `
+                        <span class="badge badge-inicio" style="display:block; margin-bottom:8px;">EN CURSO</span>
+                        <button class="btn-accion-tabla btn-acc-completar" onclick="abrirModalCompletar('${inc.ref}')">✓ Finalizar intervención</button>
+                        <button class="btn-accion-tabla" style="background:#0d6efd;color:white;margin-top:5px;" onclick="abrirModalOtroOficio('${inc.ref}')">🔄 Pasar a otro oficio</button>
+                    `;
+                } else if (inc.estado === 'Pendiente de validación') {
+                    columnaAcciones = '<span class="badge" style="background:#6f42c1;display:block;">PENDIENTE DE VALIDACIÓN</span>';
+                } else if (inc.estado === 'Cerrada' || inc.estado === 'Completada') {
+                    columnaAcciones = '<span class="badge badge-completada" style="display:block;">✓ CERRADA</span>';
+                } else {
+                    columnaAcciones = '<span class="badge badge-pendiente" style="display:block;">' + (inc.estado || 'PENDIENTE') + '</span>';
+                }
 
                 tr.innerHTML = `
                     <td><strong>${inc.ref}</strong><br><small style="color:#0d6efd; font-weight:bold;">PIN: ${inc.pin}</small><br>${prioridad}</td>
                     <td><strong>${inc.colegio || 'Centro sin identificar'}</strong><br><small style="color:#666;">${inc.direccion || ''}</small></td>
-                    <td><strong>${inc.oficio || ''}</strong><br><small style="color:#666;">${inc.tipo || ''}</small></td>
-                    <td><strong>${inc.responsable || ''}</strong><br><small style="color:#0d6efd;">📞 ${inc.telefono || ''}</small><br><small style="color:#555;">${inc.observaciones || 'Sin observaciones.'}</small></td>
-                    <td style="font-size:12px; line-height:1.6;">
-                        ${estado}
-                        <div style="margin-top:7px;"><strong>Registro:</strong> ${formatearFechaVisible(inc.fechaRegistro)}</div>
-                        <div><strong>Inicio:</strong> ${formatearFechaVisible(inc.fechaInicio)}</div>
-                        <div><strong>Finalización:</strong> ${formatearFechaVisible(inc.fechaFinalizacion)}</div>
+                    <td><strong>${inc.tipo || 'Incidencia'}</strong><br><small style="color:#666;">${inc.oficio || ''}</small></td>
+                    <td><strong>${inc.responsable || ''}</strong><br><small style="color:#0d6efd;">📞 ${inc.telefono || ''}</small></td>
+                    <td style="font-size:12px; line-height:1.55;">
+                        <div><strong>Descripción:</strong> ${inc.observaciones || 'Sin observaciones.'}</div>
+                        ${inc.observacionTecnica ? `<div style="margin-top:6px;color:#6f42c1;"><strong>Observación técnica:</strong><br>${inc.observacionTecnica}</div>` : ''}
+                        ${inc.motivoRechazoBrigada ? `<div style="margin-top:6px;color:#dc3545;"><strong>Último rechazo de Brigada:</strong><br>${inc.motivoRechazoBrigada}</div>` : ''}
+                    </td>
+                    <td style="font-size:12px; line-height:1.6; text-align:center;">
+                        ${columnaAcciones}
+                        <div style="margin-top:7px; text-align:left;"><strong>Registro:</strong> ${formatearFechaVisible(inc.fechaRegistro)}</div>
+                        <div style="text-align:left;"><strong>Inicio:</strong> ${formatearFechaVisible(inc.fechaInicio)}</div>
+                        <div style="text-align:left;"><strong>Finalización:</strong> ${formatearFechaVisible(inc.fechaFinalizacion)}</div>
                     </td>`;
                 tbody.appendChild(tr);
             });
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#d9251d;">❌ Error de conexión al cargar los trabajos de Brigada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ Error de conexión al cargar los trabajos de Brigada.</td></tr>';
+        }
+    }
+
+    async function rechazarIncidenciaBrigadaUI(ref) {
+        const motivo = prompt('Justificación obligatoria del rechazo de la incidencia ' + ref + ':');
+        if (motivo === null) return;
+        if (!motivo.trim()) { alert('Debe justificar el rechazo.'); return; }
+        if (!confirm('La incidencia volverá al listado general para que pueda ser gestionada de nuevo.\n\n¿Confirmar el rechazo?')) return;
+        try {
+            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'rechazarIncidenciaBrigada',
+                ref: ref,
+                motivo: motivo.trim(),
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+            if (r.status !== 'SUCCESS') {
+                alert('❌ ' + (r.message || 'No se pudo rechazar la incidencia.'));
+                return;
+            }
+            await cargarTablaBrigadaDesdeSheet();
+            alert('La incidencia ha vuelto al listado general.');
+        } catch (err) {
+            alert('❌ Error de conexión al registrar el rechazo.');
         }
     }
 
@@ -3611,7 +3663,7 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
         const ref=document.getElementById('modal-oficio-ref').value, oficio=document.getElementById('modal-nuevo-oficio').value;
         if(!oficio){alert('Seleccione el oficio de destino.');return;}
         if(!confirm('La intervención actual se registrará como finalizada y la incidencia pasará a '+oficio+'.\n\n¿Continuar?')) return;
-        try{const r=await ejecutarJSONP(URL_GOOGLE_SCRIPT,{action:'pasarAOtroOficio',ref:ref,nuevoOficio:oficio,tokenSesion:usuarioActual.tokenSesion},20000);if(r.status==='SUCCESS'){cerrarModalOtroOficio();await cargarTablaEmpresaDesdeSheet();}else alert('❌ '+(r.message||'No se pudo cambiar el oficio.'));}catch(err){alert('❌ Error de conexión al cambiar de oficio.');}
+        try{const r=await ejecutarJSONP(URL_GOOGLE_SCRIPT,{action:'pasarAOtroOficio',ref:ref,nuevoOficio:oficio,tokenSesion:usuarioActual.tokenSesion},20000);if(r.status==='SUCCESS'){cerrarModalOtroOficio();await recargarPanelTrabajoActual();}else alert('❌ '+(r.message||'No se pudo cambiar el oficio.'));}catch(err){alert('❌ Error de conexión al cambiar de oficio.');}
     }
 
     function abrirModalCompletar(ref) {
@@ -3629,7 +3681,21 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
         const obs = document.getElementById('modal-obs-cierre').value.trim();
 
         cerrarModalCompletar();
-        await cambiarEstadoIncidenciaSheet(ref, 'Completada', '', obs);
+        if (usuarioActual && usuarioActual.rol === 'BRIGADA') {
+            await cambiarEstadoIncidenciaSheet(ref, 'Completada', obs, '');
+        } else {
+            await cambiarEstadoIncidenciaSheet(ref, 'Completada', '', obs);
+        }
+    }
+
+    async function recargarPanelTrabajoActual() {
+        if (usuarioActual && usuarioActual.rol === 'BRIGADA') {
+            await cargarTablaBrigadaDesdeSheet();
+        } else if (usuarioActual && usuarioActual.rol === 'EMPRESA') {
+            await cargarTablaEmpresaDesdeSheet();
+        } else if (usuarioActual && usuarioActual.rol === 'TECNICO') {
+            await cargarTablaTecnicoDesdeSheet();
+        }
     }
 
     async function cambiarEstadoIncidenciaSheet(ref, nuevoEstado, obsTecnico = "", comentarioFinalEmpresa = "") {
@@ -3646,7 +3712,7 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
             const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, params, 20000);
 
             if (respuesta.status === "SUCCESS") {
-                await cargarTablaEmpresaDesdeSheet();
+                await recargarPanelTrabajoActual();
                 return respuesta;
             }
 
