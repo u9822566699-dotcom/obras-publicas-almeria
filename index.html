@@ -196,6 +196,57 @@
         .btn-send { background-color: #28a745; color: white; border: none; padding: 14px 35px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); transition: all 0.3s ease; }
         .btn-send:hover { background-color: #218838; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(40, 167, 69, 0.4); }
 
+        /* Bloqueo durante el envío de una incidencia para evitar dobles pulsaciones. */
+        #bloqueo-envio-incidencia {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.72);
+            backdrop-filter: blur(2px);
+            cursor: wait;
+        }
+        #bloqueo-envio-incidencia .bloqueo-envio-caja {
+            min-width: 280px;
+            max-width: 90%;
+            padding: 22px 26px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.16);
+            text-align: center;
+            color: #333;
+        }
+        #bloqueo-envio-incidencia .spinner-envio {
+            width: 34px;
+            height: 34px;
+            margin: 0 auto 12px auto;
+            border: 4px solid #e9ecef;
+            border-top-color: #d9251d;
+            border-radius: 50%;
+            animation: simunGiro 0.8s linear infinite;
+        }
+        @keyframes simunGiro { to { transform: rotate(360deg); } }
+        .opciones-post-registro {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+        .btn-post-registro {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-post-registro.inicio { background: #6c757d; color: #fff; }
+        .btn-post-registro.nueva { background: #d9251d; color: #fff; }
+        .btn-post-registro:hover { filter: brightness(0.95); }
+
         .btn-volver { background-color: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; margin-bottom: 15px; }
         .oculto { display: none !important; }
 
@@ -330,6 +381,70 @@
             input, select, textarea { border: 1px solid #aaa !important; background: transparent !important; }
             .tabla-incidencias th, .tabla-incidencias td { border: 1px solid #999 !important; }
         }
+
+        /* Actividad reciente compacta */
+        #panel-cambios-recientes {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%) !important;
+            border: 1px solid #e2e8f0 !important;
+            border-left: 3px solid #0d6efd !important;
+            border-radius: 8px !important;
+            padding: 8px 11px !important;
+            margin-bottom: 10px !important;
+        }
+        #panel-cambios-recientes .actividad-cabecera {
+            margin-bottom: 5px !important;
+        }
+        #panel-cambios-recientes .actividad-lista {
+            display: grid;
+            gap: 0;
+            max-height: 126px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .actividad-item {
+            display: grid;
+            grid-template-columns: 18px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 7px;
+            min-height: 31px;
+            padding: 5px 4px;
+            border-top: 1px solid #edf0f3;
+            font-size: 11px;
+            line-height: 1.25;
+        }
+        .actividad-item:first-child { border-top: 0; }
+        .actividad-icono {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .actividad-mensaje {
+            min-width: 0;
+            color: #495057;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .actividad-ref {
+            font-weight: 700;
+            color: #212529;
+            margin-right: 4px;
+        }
+        .actividad-fecha {
+            white-space: nowrap;
+            font-size: 10px;
+            color: #8a939b;
+            text-align: right;
+        }
+        @media (max-width: 700px) {
+            .actividad-fecha { display: none; }
+            .actividad-item { grid-template-columns: 18px minmax(0, 1fr); }
+            #panel-cambios-recientes .actividad-lista { max-height: 145px; }
+        }
+
     </style>
 </head>
 <body>
@@ -477,19 +592,30 @@
     </button>
 </div>
 
-<!-- KPIs -->
-    <div class="grid-3" style="margin-bottom: 20px;">
-        <div style="background:#f8f9fa; border-left:4px solid #0d6efd; padding:12px; border-radius:4px; text-align:center;">
-            <span style="font-size:12px; color:#666; font-weight:bold;">TOTAL REGISTRADAS</span>
-            <div id="kpi-total" style="font-size:22px; font-weight:bold; color:#333;">0</div>
+<!-- ACTIVIDAD RECIENTE -->
+    <div id="panel-cambios-recientes">
+        <div class="actividad-cabecera" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+            <strong style="font-size:12px; color:#343a40;">🔔 Últimos cambios de estado</strong>
+            <button type="button" class="btn-panel-nav btn-panel-refresh" style="font-size:10px; padding:3px 7px;" onclick="cargarCambiosRecientes()">🔄 Actualizar</button>
         </div>
-        <div style="background:#fff8e6; border-left:4px solid #ffc107; padding:12px; border-radius:4px; text-align:center;">
-            <span style="font-size:12px; color:#856404; font-weight:bold;">PENDIENTES</span>
-            <div id="kpi-pendientes" style="font-size:22px; font-weight:bold; color:#856404;">0</div>
+        <div id="lista-cambios-recientes" class="actividad-lista">
+            <div style="font-size:11px; color:#777; padding:4px 2px;">Cargando actividad...</div>
         </div>
-        <div style="background:#e8f5e9; border-left:4px solid #28a745; padding:12px; border-radius:4px; text-align:center;">
-            <span style="font-size:12px; color:#155724; font-weight:bold;">COMPLETADAS</span>
-            <div id="kpi-completadas" style="font-size:22px; font-weight:bold; color:#155724;">0</div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid-3" style="margin-bottom: 14px; gap:8px;">
+        <div style="background:#f8f9fa; border-left:4px solid #0d6efd; padding:7px 8px; border-radius:4px; text-align:center;">
+            <span style="font-size:10px; color:#666; font-weight:bold;">TOTAL REGISTRADAS</span>
+            <div id="kpi-total" style="font-size:18px; font-weight:bold; color:#333;">0</div>
+        </div>
+        <div style="background:#fff8e6; border-left:4px solid #ffc107; padding:7px 8px; border-radius:4px; text-align:center;">
+            <span style="font-size:10px; color:#856404; font-weight:bold;">PENDIENTES</span>
+            <div id="kpi-pendientes" style="font-size:18px; font-weight:bold; color:#856404;">0</div>
+        </div>
+        <div style="background:#e8f5e9; border-left:4px solid #28a745; padding:7px 8px; border-radius:4px; text-align:center;">
+            <span style="font-size:10px; color:#155724; font-weight:bold;">COMPLETADAS</span>
+            <div id="kpi-completadas" style="font-size:18px; font-weight:bold; color:#155724;">0</div>
         </div>
     </div>
 
@@ -782,9 +908,28 @@
 <!-- VISTA FORMULARIO PÚBLICO COMPLETO -->
 <div id="vista-formulario" style="display: none;">
 
+    <div id="bloqueo-envio-incidencia" aria-live="polite" aria-busy="true">
+        <div class="bloqueo-envio-caja">
+            <div class="spinner-envio"></div>
+            <strong>Enviando incidencia...</strong>
+            <div style="margin-top:6px; font-size:12px; color:#666;">No pulse ningún botón. Espere a recibir la confirmación.</div>
+        </div>
+    </div>
+
     <div id="entidad-session-banner" style="display:block; max-width:900px; margin:0 auto 10px auto; background:#e8f5e9; border:1px solid #a5d6a7; padding:10px 14px; border-radius:6px; font-size:13px;">
         🔐 <strong>Acceso autorizado:</strong> <span id="entidad-session-name"></span>
         <button type="button" onclick="cerrarSesionEntidad()" style="float:right; border:none; background:transparent; color:#b02a37; font-weight:bold; cursor:pointer;">Cerrar sesión</button>
+    </div>
+
+    <div id="historial-entidad-panel" class="page-container" style="margin-top:10px; padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+            <div class="section-title" style="margin:0;">📋 Historial de incidencias</div>
+            <button type="button" class="btn-panel-nav btn-panel-refresh" onclick="cargarHistorialEntidad()">🔄 Actualizar</button>
+        </div>
+        <div style="font-size:12px; color:#6c757d; margin-bottom:10px;">Registro de las últimas incidencias de esta entidad, ordenadas de la más reciente a la más antigua.</div>
+        <div id="historial-entidad-contenido" style="overflow-x:auto;">
+            <div style="text-align:center; padding:16px; color:#777;">Cargando historial...</div>
+        </div>
     </div>
 
     <div class="page-container" style="margin-top:10px; padding:18px;">
@@ -854,6 +999,10 @@
             </div>
             <small style="display: block; margin-top: 8px; color: #555;">Guarde ambos datos para poder realizar consultas sobre el estado de su solicitud.
             <div id="resultado-visita-inicial" style="display:none; margin-top:12px; padding:9px; border-radius:5px; background:#f3eefe; color:#4b2a75; font-weight:600;"></div></small>
+            <div class="opciones-post-registro">
+                <button type="button" class="btn-post-registro inicio" onclick="volverInicioTrasRegistro()">← Volver a la pantalla de inicio</button>
+                <button type="button" class="btn-post-registro nueva" onclick="realizarOtraIncidencia()">＋ Realizar otra incidencia</button>
+            </div>
         </div>
 
         <div class="header">
@@ -1002,7 +1151,7 @@
         </div>
 
         <div class="btn-container">
-            <button type="button" class="btn-send" onclick="enviarPorCorreo()">Enviar Notificación</button>
+            <button type="button" class="btn-send" id="btn-enviar-incidencia" onclick="enviarPorCorreo()">Enviar Notificación</button>
         </div>
     </div>
 </div>
@@ -1775,6 +1924,8 @@
             }
 
             sesionEntidad = respuesta;
+            const panelHistorialEntidad = document.getElementById('historial-entidad-panel');
+            if (panelHistorialEntidad) panelHistorialEntidad.style.display = respuesta.rol === 'ENTIDAD' ? 'block' : 'none';
 
             if (respuesta.rol === 'AUTORIZADO') {
                 modoAccesoEntidad = 'AUTORIZADO';
@@ -1784,6 +1935,7 @@
             }
 
             modoAccesoEntidad = 'ENTIDAD';
+            cargarHistorialEntidad();
 
             // Para un perfil ENTIDAD se mantiene el comportamiento anterior:
             // la cuenta solo puede trabajar con su propia entidad.
@@ -1898,7 +2050,7 @@
             // Solo repetimos operaciones de lectura/autenticación. Nunca repetimos
             // operaciones que puedan escribir datos para evitar duplicados.
             const accionesReintentables = new Set([
-                'login', 'loginEntidad', 'consultar',
+                'login', 'loginEntidad', 'consultar', 'historialEntidad', 'listarCambiosRecientes',
                 'listarIncidenciasNuevas', 'listarAsociaciones', 'listarTodoTecnico',
                 'listarPorOficio', 'listarBrigada', 'listarSolicitudesInspeccion'
             ]);
@@ -2021,11 +2173,13 @@
         const resultadoVisita = document.getElementById('resultado-visita-inicial');
         if (resultadoVisita) { resultadoVisita.style.display = 'none'; resultadoVisita.textContent = ''; }
         document.getElementById('caja-referencia').style.display = 'none';
+        const bloqueoEnvio = document.getElementById('bloqueo-envio-incidencia');
+        if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
         if (document.getElementById('ref-buscar-entidad')) document.getElementById('ref-buscar-entidad').value = '';
         if (document.getElementById('pin-buscar-entidad')) document.getElementById('pin-buscar-entidad').value = '';
         if (document.getElementById('resultado-consulta-entidad')) document.getElementById('resultado-consulta-entidad').innerHTML = '';
         
-        const btnEnviar = document.querySelector('.btn-send');
+        const btnEnviar = document.getElementById('btn-enviar-incidencia');
         if (btnEnviar) {
             btnEnviar.disabled = false;
             btnEnviar.textContent = "Enviar Notificación";
@@ -2617,9 +2771,16 @@
             return;
         }
 
-        const btnEnviar = document.querySelector('.btn-send');
-        btnEnviar.disabled = true;
-        btnEnviar.textContent = "Registrando incidencia...";
+        const btnEnviar = document.getElementById('btn-enviar-incidencia');
+        const bloqueoEnvio = document.getElementById('bloqueo-envio-incidencia');
+
+        // Bloqueamos toda la pantalla de trabajo mientras el servidor responde.
+        // Esto evita que una doble pulsación genere dos incidencias distintas.
+        if (bloqueoEnvio) bloqueoEnvio.style.display = 'flex';
+        if (btnEnviar) {
+            btnEnviar.disabled = true;
+            btnEnviar.textContent = "Registrando incidencia...";
+        }
 
         const datos = {
             action: 'crearIncidencia',
@@ -2660,18 +2821,61 @@
                         resultadoVisita2.style.display = 'none';
                     }
                 }
+                if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
                 btnEnviar.parentElement.style.display = 'none';
-                alert("Notificación registrada con éxito." + (solicitarVisita ? "\n\nTambién se ha solicitado una visita / valoración técnica." : "") + "\n\nReferencia: " + respuesta.ref + "\nPIN: " + respuesta.pin);
+                // La confirmación queda visible en pantalla junto con las dos acciones posibles.
+                // El usuario ya no necesita cerrar un alert para continuar.
                 setTimeout(() => window.print(), 300);
             } else {
                 throw new Error(respuesta.message || "El servidor no pudo registrar la incidencia.");
             }
         } catch (err) {
             console.error("Fallo al registrar la incidencia:", err);
+            if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
             alert("❌ No se ha podido registrar la incidencia.\n\n" + (err.message || err));
             btnEnviar.disabled = false;
             btnEnviar.textContent = "Enviar Notificación";
         }
+    }
+
+    function volverInicioTrasRegistro() {
+        const bloqueo = document.getElementById('bloqueo-envio-incidencia');
+        if (bloqueo) bloqueo.style.display = 'none';
+        mostrarPortada();
+    }
+
+    async function realizarOtraIncidencia() {
+        const bloqueo = document.getElementById('bloqueo-envio-incidencia');
+        if (bloqueo) bloqueo.style.display = 'none';
+
+        const caja = document.getElementById('caja-referencia');
+        if (caja) caja.style.display = 'none';
+
+        // Conservamos la sesión y, para un perfil ENTIDAD, volvemos a cargar
+        // automáticamente sus datos. Para un perfil AUTORIZADO se deja listo
+        // el selector para escoger de nuevo el centro/entidad.
+        if (modoAccesoEntidad === 'AUTORIZADO') {
+            prepararFormularioAutorizado();
+            return;
+        }
+
+        resetearFormulario();
+        if (sesionEntidad && sesionEntidad.token) {
+            await actualizarSelectorEntidad();
+            const select = document.getElementById('centro-select');
+            if (select) {
+                select.value = sesionEntidad.entidad || '';
+                actualizarCentro();
+            }
+            ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.readOnly = true;
+            });
+            document.getElementById('entidad-session-name').textContent =
+                (sesionEntidad.entidad || '') + ' — ' + (sesionEntidad.nombreUsuario || '');
+        }
+        document.getElementById('vista-formulario').style.display = 'block';
+        window.scrollTo(0, 0);
     }
 
     function mostrarPanelTecnico() {
@@ -2692,6 +2896,7 @@
 
         document.getElementById('vista-tecnico').classList.remove('oculto');
         cargarTablaTecnicoDesdeSheet();
+        cargarCambiosRecientes();
         actualizarContadorVisitas();
         window.scrollTo(0, 0);
     }
@@ -2707,12 +2912,97 @@
                 actualizarKpis(todasLasIncidenciasTecnico);
                 renderizarTrabajosEnCurso(todasLasIncidenciasTecnico);
                 renderizarTablaTecnico(todasLasIncidenciasTecnico);
+                cargarCambiosRecientes();
             } else {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ Error al obtener datos.</td></tr>';
             }
         } catch (err) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ Error de conexión al cargar datos.</td></tr>';
         }
+    }
+
+    async function cargarHistorialEntidad() {
+        const contenedor = document.getElementById('historial-entidad-contenido');
+        if (!contenedor || !sesionEntidad || sesionEntidad.rol !== 'ENTIDAD') return;
+        contenedor.innerHTML = '<div style="text-align:center; padding:16px; color:#777;">⏳ Cargando historial...</div>';
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'historialEntidad',
+                tokenSesion: sesionEntidad.tokenSesion || sesionEntidad.token
+            }, 20000);
+            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudo obtener el historial.');
+            const datos = Array.isArray(respuesta.data) ? respuesta.data : [];
+            if (!datos.length) {
+                contenedor.innerHTML = '<div style="text-align:center; padding:18px; color:#777;">No hay incidencias registradas todavía.</div>';
+                return;
+            }
+            let html = '<table class="tabla-incidencias" style="min-width:820px;"><thead><tr><th>Referencia</th><th>Fecha</th><th>Oficio</th><th>Trabajo</th><th>Prioridad</th><th>Estado</th><th>Finalización</th><th>Observación</th></tr></thead><tbody>';
+            datos.slice(0, 20).forEach(function(inc) {
+                const estado = String(inc.estado || '');
+                let color = '#6c757d';
+                if (estado.indexOf('Aceptada') === 0) color = '#198754';
+                else if (estado === 'Inicio') color = '#0d6efd';
+                else if (estado === 'Completada' || estado === 'Cerrada') color = '#198754';
+                else if (estado.indexOf('Rechazada') === 0) color = '#dc3545';
+                const motivoRechazo = String(inc.motivoRechazoTecnico || '').trim();
+                const observacion = motivoRechazo
+                    ? '<div style="background:#fff5f5;border-left:3px solid #dc3545;padding:7px 9px;border-radius:4px;white-space:pre-line;"><strong style="color:#b02a37;">✕ Motivo del rechazo:</strong><br>' + escaparHtml(motivoRechazo) + '</div>'
+                    : '—';
+                html += '<tr>' +
+                    '<td style="font-weight:bold;">' + escaparHtml(inc.ref) + '</td>' +
+                    '<td>' + escaparHtml(formatearFechaVisible(inc.fecha)) + '</td>' +
+                    '<td>' + escaparHtml(inc.oficio || '—') + '</td>' +
+                    '<td>' + escaparHtml(inc.trabajo || '—') + '</td>' +
+                    '<td>' + escaparHtml(inc.prioridad || 'NORMAL') + '</td>' +
+                    '<td><span style="font-weight:bold;color:' + color + ';">' + escaparHtml(estado || '—') + '</span></td>' +
+                    '<td>' + escaparHtml(formatearFechaVisible(inc.fechaFinalizacion)) + '</td>' +
+                    '<td style="min-width:240px;">' + observacion + '</td>' +
+                    '</tr>';
+            });
+            html += '</tbody></table>';
+            contenedor.innerHTML = html;
+        } catch (err) {
+            contenedor.innerHTML = '<div style="padding:14px; background:#fff3cd; border:1px solid #ffe69c; color:#664d03; border-radius:5px;">❌ ' + escaparHtml(err.message || String(err)) + '</div>';
+        }
+    }
+
+    async function cargarCambiosRecientes() {
+        const contenedor = document.getElementById('lista-cambios-recientes');
+        if (!contenedor || !usuarioActual || !usuarioActual.tokenSesion) return;
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarCambiosRecientes',
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudo obtener la actividad.');
+            const datos = Array.isArray(respuesta.data) ? respuesta.data : [];
+            if (!datos.length) {
+                contenedor.innerHTML = '<div style="font-size:12px; color:#777; padding:5px 0;">No hay cambios recientes registrados.</div>';
+                return;
+            }
+            contenedor.innerHTML = datos.slice(0, 10).map(function(item) {
+                const estado = String(item.estado || '');
+                let icono = '🔄';
+                if (estado.indexOf('Aceptada') === 0) icono = '✅';
+                else if (estado === 'Inicio') icono = '▶️';
+                else if (estado === 'Completada') icono = '🏁';
+                else if (estado.indexOf('Rechazada') === 0) icono = '⚠️';
+                else if (estado.indexOf('Pendiente') === 0) icono = '⏳';
+                return '<div class="actividad-item">' +
+                    '<span class="actividad-icono">' + icono + '</span>' +
+                    '<div class="actividad-mensaje"><span class="actividad-ref">' + escaparHtml(item.ref || '') + '</span>— ' + escaparHtml(item.mensaje || '') + (item.actor ? ' · ' + escaparHtml(item.actor) : '') + '</div>' +
+                    '<span class="actividad-fecha">' + escaparHtml(formatearFechaVisible(item.fecha)) + '</span>' +
+                    '</div>';
+            }).join('');
+        } catch (err) {
+            contenedor.innerHTML = '<div style="font-size:12px; color:#b02a37; padding:5px 0;">❌ No se ha podido cargar la actividad reciente.</div>';
+        }
+    }
+
+    function escaparHtml(valor) {
+        return String(valor === null || valor === undefined ? '' : valor)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     function actualizarKpis(datos) {
