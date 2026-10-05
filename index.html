@@ -1855,6 +1855,7 @@
 
     let tipoEntidadActual = 'COLEGIO';
     let sesionEntidad = null;
+    let edificiosMunicipalesAutorizados = [];
     let modoAccesoEntidad = 'ENTIDAD'; // ENTIDAD = centro fijo; AUTORIZADO = puede elegir cualquier entidad
 
     function mostrarLoginEntidad() {
@@ -1981,6 +1982,7 @@
 
     function cerrarSesionEntidad() {
         sesionEntidad = null;
+        edificiosMunicipalesAutorizados = [];
         modoAccesoEntidad = 'ENTIDAD';
         tipoEntidadActual = 'COLEGIO';
         ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
@@ -2197,12 +2199,29 @@
         const grupoCentroAut = document.getElementById('grupo-centro-autorizado');
         const labelCentro = document.getElementById('label-centro-autorizado');
 
+        const tipoAutorizadoFijo = !esMunicipal && sesionEntidad &&
+            ['COLEGIO', 'ASOCIACION', 'MUNICIPAL'].includes(sesionEntidad.tipoEntidad)
+            ? sesionEntidad.tipoEntidad
+            : '';
+
         if (esMunicipal) {
             tipoEntidadActual = 'MUNICIPAL';
             if (filtro) filtro.style.display = 'none';
             if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
             if (grupoCentroAut) grupoCentroAut.style.display = 'block';
             if (labelCentro) labelCentro.textContent = 'Edificio o dependencia municipal *';
+        } else if (tipoAutorizadoFijo) {
+            tipoEntidadActual = tipoAutorizadoFijo;
+            if (filtro) filtro.style.display = 'none';
+            if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
+            if (grupoCentroAut) grupoCentroAut.style.display = 'block';
+            if (labelCentro) {
+                labelCentro.textContent = tipoAutorizadoFijo === 'ASOCIACION'
+                    ? 'Asociación vecinal *'
+                    : tipoAutorizadoFijo === 'COLEGIO'
+                        ? 'Centro o colegio *'
+                        : 'Edificio o dependencia municipal *';
+            }
         } else {
             if (filtro) filtro.style.display = 'block';
             if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
@@ -2237,7 +2256,9 @@
     async function actualizarSelectorAutorizado() {
         const tipo = sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal
             ? 'MUNICIPAL'
-            : document.getElementById('filtro-tipo-autorizado').value;
+            : sesionEntidad && ['COLEGIO', 'ASOCIACION', 'MUNICIPAL'].includes(sesionEntidad.tipoEntidad)
+                ? sesionEntidad.tipoEntidad
+                : document.getElementById('filtro-tipo-autorizado').value;
         const select = document.getElementById('centro-select-autorizado');
         const label = document.getElementById('label-centro-autorizado');
         if (!select) return;
@@ -2249,18 +2270,18 @@
         if (tipo === 'MUNICIPAL' && sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal) {
             label.textContent = 'Edificio o dependencia municipal *';
             const permitidos = Array.isArray(sesionEntidad.edificiosAutorizados) ? sesionEntidad.edificiosAutorizados : [];
-            edificiosMunicipales = permitidos.map(function(item) {
+            edificiosMunicipalesAutorizados = permitidos.map(function(item) {
                 return {
                     Tipo: 'Edificio / dependencia municipal',
-                    Nombre: item.nombre || '',
-                    Area: item.area || '',
-                    'Dirección': item.direccion || '',
-                    'Código postal': item.cp || '',
-                    Localidad: item.localidad || '',
-                    Municipio: item.municipio || ''
+                    Nombre: item.nombre || item.Nombre || '',
+                    Area: item.area || item.Area || '',
+                    'Dirección': item.direccion || item['Dirección'] || '',
+                    'Código postal': item.cp || item['Código postal'] || '',
+                    Localidad: item.localidad || item['Localidad'] || '',
+                    Municipio: item.municipio || item['Municipio'] || ''
                 };
             }).filter(function(item) { return item.Nombre; });
-            nombres = edificiosMunicipales.map(item => item.Nombre);
+            nombres = edificiosMunicipalesAutorizados.map(item => item.Nombre);
         } else if (tipo === 'ASOCIACION') {
             label.textContent = 'Asociación vecinal *';
             try { await cargarAsociacionesDesdeSheet(); }
@@ -2428,7 +2449,7 @@
             if (tipoEntidadActual === 'ASOCIACION') {
                 datos = asociacionesVecinales.find(item => item['Nombre'] === nombre);
             } else if (tipoEntidadActual === 'MUNICIPAL') {
-                datos = edificiosMunicipales.find(item => item['Nombre'] === nombre);
+                datos = edificiosMunicipalesAutorizados.find(item => item['Nombre'] === nombre);
             } else if (tipoEntidadActual === 'COLEGIO') {
                 datos = centrosEducativos[nombre];
             }
