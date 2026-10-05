@@ -2242,7 +2242,7 @@
         document.getElementById('vista-formulario').style.display = 'block';
         window.scrollTo(0, 0);
 
-        if (esMunicipal) {
+        if (esMunicipal || tipoAutorizadoFijo) {
             actualizarSelectorAutorizado().then(() => {
                 const select = document.getElementById('centro-select-autorizado');
                 if (select) {
