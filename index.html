@@ -1035,7 +1035,7 @@
 
         <div id="grupo-centro-autorizado" class="form-group" style="display:none;">
             <label for="centro-select-autorizado"><span id="label-centro-autorizado">Centro o colegio *</span></label>
-            <select id="centro-select-autorizado" onchange="actualizarCentro()">
+            <select id="centro-select-autorizado" onchange="actualizarCentro(); if (sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal) cargarHistorialEntidad();">
                 <option value="">Seleccione primero el tipo de entidad...</option>
             </select>
         </div>
@@ -1207,633 +1207,44 @@
         }
     }
 
-    const edificiosMunicipales = [
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Archivo Municipal",
-        "Categoría": "Archivos y bibliotecas",
-        "Dirección": "Calle Arráez, 15",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Biblioteca Central",
-        "Categoría": "Archivos y bibliotecas",
-        "Dirección": "Calle de los Santos Zárate, 13",
-        "Código postal": "4004",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Biblioteca De Los Ángeles",
-        "Categoría": "Archivos y bibliotecas",
-        "Dirección": "Plaza de los Ángeles, s/n",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Biblioteca De El Alquian",
-        "Categoría": "Archivos y bibliotecas",
-        "Dirección": "Calle Magallanes, s/n",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Biblioteca Cabo De Gata",
-        "Categoría": "Archivos y bibliotecas",
-        "Dirección": "Calle de la Iglesia, s/n",
-        "Código postal": "4150",
-        "Localidad": "Cabo de Gata"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Biblioteca De La Chanca",
-        "Categoría": "Archivos y bibliotecas",
-        "Dirección": "Avenida del Mar, s/n",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Servicios Sociales Comunitarios Ciudad Jardín",
-        "Categoría": "Centros sociales",
-        "Dirección": "Plaza Colon, Nº 17",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Unidad De Trabajo Social La Cañada",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de la Iglesia, s/n",
-        "Código postal": "4120",
-        "Localidad": "La Cañada de San Urbano"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Unidad De Trabajo Social El Alquián",
-        "Categoría": "Centros sociales",
-        "Dirección": "Plaza de la Iglesia, 1",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Unidad De Trabajo Social Cabo De Gata",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de la Iglesia, s/n",
-        "Código postal": "4150",
-        "Localidad": "Cabo de Gata"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Servicios Sociales Comunitarios Rambla Belén Amatisteros",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de los Amatistas, s/n",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Unidad De Trabajo Social Quemadero Fuentecica",
-        "Categoría": "Centros sociales",
-        "Dirección": "Plaza del Quemadero, s/n",
-        "Código postal": "4003",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Servicios Sociales Comunitarios Casco Antiguo",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de la Almedina, 16",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Servicios Sociales Comunitarios Nueva Andalucía",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de la Italia, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "ERACIS El Puche",
-        "Categoría": "Centros sociales",
-        "Dirección": "Avda Mare Nostrum s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Municipal De Acogida",
-        "Categoría": "Centros sociales",
-        "Dirección": "Carretera de Níjar-Los Molinos, 134",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Municipal Del Mayor Mediterráneo Oliveros",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de los Soldados, s/n",
-        "Código postal": "4004",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Municipal De Mayores Santa Isabel",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de Santa Isabel, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Municipal De Mayores La Cañada",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de la Iglesia, s/n",
-        "Código postal": "4120",
-        "Localidad": "La Cañada de San Urbano"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Municipal De Mayores El Alquian",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle Magallanes, s/n",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Municipal De Mayores El Puche",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de la Amistad, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Municipal De Mayores 500 Viviendas",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle Bilbao, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Espacio Alma",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle Alcalde Santiago Martínez Cabrejas, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Equipamiento Social En Calle Reverenda Madre María Micaela",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle Madre María Micaela, 4",
-        "Código postal": "4008",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro De La Mujer Los Molinos",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle de la Molinera, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro De La Mujer Cortijo Grande",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle Antonio Muñoz Zamora, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro De La Mujer Alcalde Muñoz",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle Alcalde Muñoz, 12",
-        "Código postal": "4004",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "CIS Los Almendros",
-        "Categoría": "Centros sociales",
-        "Dirección": "Calle Sierra de Tabernas, 9",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Casas Consistoriales",
-        "Categoría": "Dependencias municipales",
-        "Dirección": "Plaza de la Constitución, s/n",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Edificio Policía Local",
-        "Categoría": "Dependencias municipales",
-        "Dirección": "Avenida del Mediterráneo, 255",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Edificio De Bomberos",
-        "Categoría": "Dependencias municipales",
-        "Dirección": "Calle Diseminados, 102 (N-340a)",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Edificio Administrativo Plaza Rincón De Espronceda",
-        "Categoría": "Dependencias municipales",
-        "Dirección": "Plaza Rincón de Espronceda, 1",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Edificio Administratvo Calle Juez",
-        "Categoría": "Dependencias municipales",
-        "Dirección": "Calle Juez, 4",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Edificio Administrativo Preventorio",
-        "Categoría": "Dependencias municipales",
-        "Dirección": "Carretera de Ronda, 94",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Órgano Gestión Tributaria",
-        "Categoría": "Dependencias municipales",
-        "Dirección": "Calle San Juan Bosco, 2",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Escuela De Adultos De La Cañada",
-        "Categoría": "Escuelas de adultos",
-        "Dirección": "Calle de la Iglesia, s/n",
-        "Código postal": "4120",
-        "Localidad": "La Cañada de San Urbano"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Escuela De Adultos De El Alquián",
-        "Categoría": "Escuelas de adultos",
-        "Dirección": "Calle Magallanes, s/n",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Escuela De Adultos 500 Viviendas",
-        "Categoría": "Escuelas de adultos",
-        "Dirección": "Calle Carmen de Burgos, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Escuela De Adultos De Regiones",
-        "Categoría": "Escuelas de adultos",
-        "Dirección": "Calle Grecia, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Escuela De Adultos De Cabo De Gata",
-        "Categoría": "Escuelas de adultos",
-        "Dirección": "Calle Iglesia, s/n",
-        "Código postal": "4150",
-        "Localidad": "Cabo de Gata"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Escuela De Adultos De La Chanca",
-        "Categoría": "Escuelas de adultos",
-        "Dirección": "Avenida del Mar, s/n",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Nave Sector 20",
-        "Categoría": "Locales y naves municipales",
-        "Dirección": "Pol. Ind. Sector 20, Calle Acebo",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Nave Rotonda El Puche",
-        "Categoría": "Locales y naves municipales",
-        "Dirección": "Avenida de Torrecárdenas, s/n",
-        "Código postal": "4009",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Naves Autovía Aeropuerto",
-        "Categoría": "Locales y naves municipales",
-        "Dirección": "Autovía Almería-Níjar, Km 7",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Locales Municipales Rambla",
-        "Categoría": "Locales y naves municipales",
-        "Dirección": "Avenida de la Estación, s/n",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Local Mirador Norte Rambla",
-        "Categoría": "Locales y naves municipales",
-        "Dirección": "Avenida Federico García Lorca, s/n",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Mercado Central",
-        "Categoría": "Mercados",
-        "Dirección": "Obispo Orberá, s/n",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Mercado De Los Ángeles",
-        "Categoría": "Mercados",
-        "Dirección": "Plaza de los Ángeles, s/n",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Mercado Plaza Pavía",
-        "Categoría": "Mercados",
-        "Dirección": "Plaza Pavía, s/n",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Mercado Plaza Quemadero",
-        "Categoría": "Mercados",
-        "Dirección": "Plaza del Quemadero, s/n",
-        "Código postal": "4003",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Museo De La Guitarra",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Ronda del Beato Diego Ventaja, s/n",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Museo Casa del Poeta José Valente",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Calle Jose Ángel Valente, 7",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Refugios",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Plaza de Manuel Pérez García, 1",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Casa del Cine",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Camino Romero, 1",
-        "Código postal": "4003",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Museo De Arte Espacio 2",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Plaza de Carlos Cano, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Barrio Andalusí_Mesón Gitano",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Calle Fernandez, s/n",
-        "Código postal": "4002",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Interpretación Patrimonial",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Plaza de la Constitución, s/n",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Aljibes",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Calle Tenor Iribarne, o",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Museo Doña Pakita",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Paseo de Almería, 56",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Museo Antonio Torres",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Calle de la Guitarra, s/n",
-        "Código postal": "4120",
-        "Localidad": "La Cañada de San Urbano"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Auditorio Maestro Padilla",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Plaza Alfredo Kraus",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Teatro Apolo",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Calle Rambla Obispo Orberá",
-        "Código postal": "4001",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Palacio de Congresos El Toyo",
-        "Categoría": "Museos y espacios culturales",
-        "Dirección": "Calle de los Juegos de Casablanca, 1",
-        "Código postal": "4131",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Oficina Periférica Cabo De Gata",
-        "Categoría": "Oficinas periféricas",
-        "Dirección": "Calle Luis Abad Carretero, 2",
-        "Código postal": "4150",
-        "Localidad": "Cabo de Gata"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Oficina Periférica De El Alquián",
-        "Categoría": "Oficinas periféricas",
-        "Dirección": "Plaza de la Iglesia, 1",
-        "Código postal": "4130",
-        "Localidad": "El Alquián"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Oficina Periférica De La Cañada",
-        "Categoría": "Oficinas periféricas",
-        "Dirección": "Plaza Antonio de Torres, 1",
-        "Código postal": "4120",
-        "Localidad": "La Cañada de San Urbano"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Oficina Periférica De Retamar Toyo",
-        "Categoría": "Oficinas periféricas",
-        "Dirección": "Paseo del Toyo, s/n",
-        "Código postal": "4131",
-        "Localidad": "Retamar"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Oficina Periférica De Los Ángeles",
-        "Categoría": "Oficinas periféricas",
-        "Dirección": "Plaza de los Ángeles, s/n",
-        "Código postal": "4005",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Oficina Periférica Ciudad Jardín",
-        "Categoría": "Oficinas periféricas",
-        "Dirección": "Plaza de la Juventud, s/n",
-        "Código postal": "4007",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Nueva Andalucía",
-        "Categoría": "Oficinas periféricas",
-        "Dirección": "Avenida de Montserrat, s/n",
-        "Código postal": "4006",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Centro Zoosanitario",
-        "Categoría": "Otros",
-        "Dirección": "Avda. Cabo de Gata, 239",
-        "Código postal": "",
-        "Localidad": "Almería"
-    },
-    {
-        "Tipo": "Edificio / dependencia municipal",
-        "Nombre": "Oficina Sindical CCOO",
-        "Categoría": "Otros",
-        "Dirección": "Pablo Iglesias, 25 1º",
-        "Código postal": "4003",
-        "Localidad": "Almería"
-    }
-];
+    let edificiosMunicipales = [];
+    let edificiosMunicipalesCargados = false;
 
-    const centrosEducativos = {
-        "CEIP Adela Díaz": { direccion: "Av. Padre Méndez, 35", cp: "04006", localidad: "Almería", municipio: "Almería" },
-        "CEIP Alfredo Molina Martín": { direccion: "C. Fernando de Rojas, 4", cp: "04008", localidad: "Almería", municipio: "Almería" },
-        "CEIP Ángel Suquía": { direccion: "C. Sierra de Bacares, 1", cp: "04009", localidad: "Almería", municipio: "Almería" },
-        "CEIP Ave María del Diezmo": { direccion: "Carrera del Mamí, 110", cp: "04009", localidad: "Almería", municipio: "Almería" },
-        "CEIP Ave María del Quemadero": { direccion: "C. Barranco Bolas, 7", cp: "04003", localidad: "Almería", municipio: "Almería" },
-        "CEIP Colonia Araceli": { direccion: "C. Virgen de la Piedad, 26", cp: "04008", localidad: "Almería", municipio: "Almería" },
-        "CEIP El Puche": { direccion: "Avda. Mare Nostrum, 56", cp: "04009", localidad: "Almería", municipio: "Almería" },
-        "CEIP Europa José Ramos Santander": { direccion: "C. Madre María Aznar, 272", cp: "04009", localidad: "Almería", municipio: "Almería" },
-        "CEIP Francisco de Goya": { direccion: "C. Cruz de Caravaca, 34", cp: "04008", localidad: "Almería", municipio: "Almería" },
-        "CEIP Freinet": { direccion: "Ctra. de Ronda, 100", cp: "04006", localidad: "Almería", municipio: "Almería" },
-        "CEIP Giner de los Ríos": { direccion: "C. Cervantes, s/n", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP Ginés Morata": { direccion: "C. Sahara, 137", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP Indalo": { direccion: "C. Granada, 249", cp: "04008", localidad: "Almería", municipio: "Almería" },
-        "CEIP Inés Relaño": { direccion: "C. Gral. Luque, 31", cp: "04002", localidad: "Almería", municipio: "Almería" },
-        "CEIP Josefina Baro Soler": { direccion: "C. Mare Nostum, s/n", cp: "04009", localidad: "Almería", municipio: "Almería" },
-        "CEIP Juan Ramón Jiménez": { direccion: "C. Alfarerías, 43", cp: "04008", localidad: "Almería", municipio: "Almería" },
-        "CEIP La Chanca": { direccion: "Avda. del Mar, s/n", cp: "04002", localidad: "Almería", municipio: "Almería" },
-        "CEIP Lope de Vega": { direccion: "C. de Chile, 42", cp: "04003", localidad: "Almería", municipio: "Almería" },
-        "CEIP Los Almendros": { direccion: "C. Buen Amigo, s/n", cp: "04009", localidad: "Almería", municipio: "Almería" },
-        "CEIP Los Millares": { direccion: "Avda. Santa Isabel, s/n", cp: "04006", localidad: "Almería", municipio: "Almería" },
-        "CEIP Luis Siret": { direccion: "Avda. Santa Isabel, 29", cp: "04002", localidad: "Almería", municipio: "Almería" },
-        "CEIP Madre de la Luz": { direccion: "C. Calzada de Castro, 3", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP Mar Mediterráneo": { direccion: "C. Jose Morales Abad, 9", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP Nueva Almería": { direccion: "C. Fernando Fernán Gómez, 33", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP Rafael Alberti": { direccion: "C. Marina, 9", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP San Fernando": { direccion: "C. Rodrigo Vivas Miras, 28", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP San Gabriel": { direccion: "C. Villa de Artés, 13", cp: "04005", localidad: "Almería", municipio: "Almería" },
-        "CEIP San Luis": { direccion: "C. San Luis, s/n", cp: "04005", localidad: "Almería", municipio: "Almería" },
-        "CEIP San Valentín": { direccion: "C. de las Alpujarras, s/n", cp: "04005", localidad: "Almería", municipio: "Almería" },
-        "CEIP Santa Isabel": { direccion: "C. de la Molineta, s/n", cp: "04009", localidad: "Almería", municipio: "Almería" },
-        "CEIP Virgen de Loreto": { direccion: "C. Jose María Artero, 12", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP Virgen del Mar": { direccion: "C. Granada, 159", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEP Padre Méndez": { direccion: "Av. Padre Méndez, 18", cp: "04006", localidad: "Almería", municipio: "Almería" },
-        "CEIP San Bernardo": { direccion: "C. Manuel del Águila Ortega, s/n", cp: "04130", localidad: "El Alquián", municipio: "Almería" },
-        "CEIP San Vicente": { direccion: "C. de la Iglesia, s/n", cp: "04130", localidad: "El Alquián", municipio: "Almería" },
-        "CEIP Virgen del Mar. Cabo de Gata": { direccion: "C. de la Iglesia, s/n", cp: "04150", localidad: "Cabo de Gata", municipio: "Almería" },
-        "CEIP Ferrer Guardia": { direccion: "Paraje del Charco s/n", cp: "04120", localidad: "La Cañada de San Urbano", municipio: "Almería" },
-        "CEIP San Indalecio": { direccion: "C. de la Mar de la Cañada, s/n", cp: "04120", localidad: "La Cañada de San Urbano", municipio: "Almería" },
-        "CEIP Torremar": { direccion: "Av. de los Juegos del Mediterráneo, s/n", cp: "04131", localidad: "El Toyo, Retamar", municipio: "Almería" },
-        "CEE Princesa Sofía": { direccion: "C. Pablo Neruda, 5", cp: "04008", localidad: "Almería", municipio: "Almería" },
-        "CEE Rosa Relaño": { direccion: "C. de los Limoneros, 15", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEI Mar de Alborán": { direccion: "C. Padre Mendez, s/n", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "CEIP Rodríguez Espinosa": { direccion: "C. Principal, s/n", cp: "04131", localidad: "Cuevas de los Medina", municipio: "Almería" },
-        "CEI Maestro Padilla": { direccion: "C. Grecia, 1", cp: "04007", localidad: "Almería", municipio: "Almería" },
-        "Guardería De El Alquián": { direccion: "Calle Américo Vespucio, s/n", cp: "04130", localidad: "El Alquián", municipio: "Almería" },
-        "Guardería De Los Almendros": { direccion: "Calle Sierra de Gredos, s/n", cp: "04008", localidad: "Almería", municipio: "Almería" }
-    };
+    async function cargarEdificiosMunicipalesDesdeSheet() {
+        if (edificiosMunicipalesCargados && Array.isArray(edificiosMunicipales)) {
+            return edificiosMunicipales;
+        }
+
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarEdificiosMunicipales'
+            }, 20000);
+
+            if (respuesta.status !== 'SUCCESS' || !Array.isArray(respuesta.data)) {
+                throw new Error(respuesta.message || 'No se pudieron cargar los edificios municipales.');
+            }
+
+            edificiosMunicipales = respuesta.data.map(function(item) {
+                return {
+                    Tipo: 'Edificio / dependencia municipal',
+                    Nombre: item.nombre || '',
+                    Area: item.area || '',
+                    'Dirección': item.direccion || '',
+                    'Código postal': item.cp || '',
+                    Localidad: item.localidad || '',
+                    Municipio: item.municipio || ''
+                };
+            }).filter(function(item) { return item.Nombre; });
+
+            edificiosMunicipalesCargados = true;
+            return edificiosMunicipales;
+        } catch (err) {
+            edificiosMunicipales = [];
+            edificiosMunicipalesCargados = false;
+            console.error('Error al cargar edificios municipales desde Google Sheets:', err);
+            throw err;
+        }
+    }
 
     const tiposPorOficio = {
         "Albañilería": ["Fuentes", "Solados / Azulejos", "Tabiquería / Paramentos", "Arquetas", "OTROS"],
@@ -1886,7 +1297,7 @@
 
         document.getElementById('titulo-login-entidad').textContent = 'PERFIL AUTORIZADO';
         document.getElementById('texto-login-entidad').textContent =
-            'Introduzca sus credenciales para acceder como perfil autorizado y seleccionar el centro o entidad para el que realiza el aviso.';
+            'Introduzca sus credenciales de perfil autorizado. El sistema determinará automáticamente las áreas municipales y los edificios que tiene asignados.';
         document.getElementById('usuario-entidad').value = '';
         document.getElementById('password-entidad').value = '';
         document.getElementById('login-entidad-error').style.display = 'none';
@@ -1925,11 +1336,11 @@
 
             sesionEntidad = respuesta;
             const panelHistorialEntidad = document.getElementById('historial-entidad-panel');
-            if (panelHistorialEntidad) panelHistorialEntidad.style.display = respuesta.rol === 'ENTIDAD' ? 'block' : 'none';
+            if (panelHistorialEntidad) panelHistorialEntidad.style.display = (respuesta.rol === 'ENTIDAD' || respuesta.esPerfilAutorizadoMunicipal) ? 'block' : 'none';
 
             if (respuesta.rol === 'AUTORIZADO') {
                 modoAccesoEntidad = 'AUTORIZADO';
-                tipoEntidadActual = '';
+                tipoEntidadActual = respuesta.esPerfilAutorizadoMunicipal ? 'MUNICIPAL' : '';
                 prepararFormularioAutorizado();
                 return;
             }
@@ -2021,6 +1432,11 @@
             seccion.textContent = 'Datos del edificio o dependencia municipal';
             label.textContent = 'Edificio o dependencia municipal (MD) *';
             input.placeholder = 'Escriba o seleccione el edificio o dependencia municipal...';
+            try {
+                await cargarEdificiosMunicipalesDesdeSheet();
+            } catch (err) {
+                input.placeholder = 'No se han podido cargar los edificios municipales';
+            }
             nombres = edificiosMunicipales.map(item => item['Nombre']).filter(Boolean);
         } else {
             seccion.textContent = 'Datos del centro o colegio';
@@ -2148,7 +1564,7 @@
         const filtroAut = document.getElementById('filtro-tipo-autorizado');
         const centroAut = document.getElementById('centro-select-autorizado');
         if (filtroAut) filtroAut.value = "";
-        if (centroAut) centroAut.innerHTML = '<option value="">Seleccione primero el tipo de entidad...</option>';
+        if (centroAut) centroAut.innerHTML = '<option value="">Seleccione el edificio / entidad...</option>';
         document.getElementById('direccion').value = "";
         document.getElementById('codigo_postal').value = "";
         document.getElementById('localidad').value = "";
@@ -2191,44 +1607,85 @@
         ocultarTodasLasVistas();
         resetearFormulario();
 
-        document.getElementById('grupo-filtro-autorizado').style.display = 'block';
-        document.getElementById('grupo-centro-normal').style.display = 'none';
-        document.getElementById('grupo-centro-autorizado').style.display = 'block';
-        document.getElementById('seccion-entidad').textContent = 'Selección de centro o entidad para el aviso';
-        document.getElementById('label-centro-autorizado').textContent = 'Centro / entidad *';
+        const esMunicipal = !!(sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal);
+        const filtro = document.getElementById('grupo-filtro-autorizado');
+        const grupoCentroNormal = document.getElementById('grupo-centro-normal');
+        const grupoCentroAut = document.getElementById('grupo-centro-autorizado');
+        const labelCentro = document.getElementById('label-centro-autorizado');
+
+        if (esMunicipal) {
+            tipoEntidadActual = 'MUNICIPAL';
+            if (filtro) filtro.style.display = 'none';
+            if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
+            if (grupoCentroAut) grupoCentroAut.style.display = 'block';
+            if (labelCentro) labelCentro.textContent = 'Edificio o dependencia municipal *';
+        } else {
+            if (filtro) filtro.style.display = 'block';
+            if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
+            if (grupoCentroAut) grupoCentroAut.style.display = 'block';
+            if (labelCentro) labelCentro.textContent = 'Centro / entidad *';
+        }
 
         ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
             document.getElementById(id).readOnly = true;
         });
 
         document.getElementById('entidad-session-banner').style.display = 'block';
+        const areaTexto = esMunicipal && Array.isArray(sesionEntidad.areasAutorizadas)
+            ? ' — Área: ' + sesionEntidad.areasAutorizadas.join(', ')
+            : '';
         document.getElementById('entidad-session-name').textContent =
-            'PERFIL AUTORIZADO — ' + (sesionEntidad.nombreUsuario || sesionEntidad.usuario || 'Usuario autorizado');
+            'PERFIL AUTORIZADO — ' + (sesionEntidad.perfil || sesionEntidad.nombreUsuario || sesionEntidad.usuario || 'Usuario autorizado') + areaTexto;
         document.getElementById('vista-formulario').style.display = 'block';
         window.scrollTo(0, 0);
+
+        if (esMunicipal) {
+            actualizarSelectorAutorizado().then(() => {
+                const select = document.getElementById('centro-select-autorizado');
+                if (select) {
+                    select.value = '';
+                    document.getElementById('historial-entidad-contenido').innerHTML = '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
+                }
+            });
+        }
     }
 
     async function actualizarSelectorAutorizado() {
-        const tipo = document.getElementById('filtro-tipo-autorizado').value;
+        const tipo = sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal
+            ? 'MUNICIPAL'
+            : document.getElementById('filtro-tipo-autorizado').value;
         const select = document.getElementById('centro-select-autorizado');
         const label = document.getElementById('label-centro-autorizado');
         if (!select) return;
 
         tipoEntidadActual = tipo;
-        select.innerHTML = '<option value="">Seleccione el centro / entidad...</option>';
+        select.innerHTML = '<option value="">Seleccione el edificio / entidad...</option>';
 
         let nombres = [];
-        if (tipo === 'ASOCIACION') {
+        if (tipo === 'MUNICIPAL' && sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal) {
+            label.textContent = 'Edificio o dependencia municipal *';
+            const permitidos = Array.isArray(sesionEntidad.edificiosAutorizados) ? sesionEntidad.edificiosAutorizados : [];
+            edificiosMunicipales = permitidos.map(function(item) {
+                return {
+                    Tipo: 'Edificio / dependencia municipal',
+                    Nombre: item.nombre || '',
+                    Area: item.area || '',
+                    'Dirección': item.direccion || '',
+                    'Código postal': item.cp || '',
+                    Localidad: item.localidad || '',
+                    Municipio: item.municipio || ''
+                };
+            }).filter(function(item) { return item.Nombre; });
+            nombres = edificiosMunicipales.map(item => item.Nombre);
+        } else if (tipo === 'ASOCIACION') {
             label.textContent = 'Asociación vecinal *';
-            try {
-                await cargarAsociacionesDesdeSheet();
-            } catch (err) {
-                select.innerHTML = '<option value="">No se han podido cargar las asociaciones...</option>';
-                return;
-            }
+            try { await cargarAsociacionesDesdeSheet(); }
+            catch (err) { select.innerHTML = '<option value="">No se han podido cargar las asociaciones...</option>'; return; }
             nombres = asociacionesVecinales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipo === 'MUNICIPAL') {
             label.textContent = 'Edificio o dependencia municipal *';
+            try { await cargarEdificiosMunicipalesDesdeSheet(); }
+            catch (err) { select.innerHTML = '<option value="">No se han podido cargar los edificios...</option>'; return; }
             nombres = edificiosMunicipales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipo === 'COLEGIO') {
             label.textContent = 'Centro o colegio *';
@@ -2923,12 +2380,24 @@
 
     async function cargarHistorialEntidad() {
         const contenedor = document.getElementById('historial-entidad-contenido');
-        if (!contenedor || !sesionEntidad || sesionEntidad.rol !== 'ENTIDAD') return;
+        if (!contenedor || !sesionEntidad) return;
+        const esMunicipalAutorizado = sesionEntidad.rol === 'AUTORIZADO' && sesionEntidad.esPerfilAutorizadoMunicipal;
+        if (sesionEntidad.rol !== 'ENTIDAD' && !esMunicipalAutorizado) return;
+
+        const entidadHistorial = esMunicipalAutorizado
+            ? (document.getElementById('centro-select-autorizado')?.value || '')
+            : '';
+        if (esMunicipalAutorizado && !entidadHistorial) {
+            contenedor.innerHTML = '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
+            return;
+        }
+
         contenedor.innerHTML = '<div style="text-align:center; padding:16px; color:#777;">⏳ Cargando historial...</div>';
         try {
             const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
                 action: 'historialEntidad',
-                tokenSesion: sesionEntidad.tokenSesion || sesionEntidad.token
+                tokenSesion: sesionEntidad.tokenSesion || sesionEntidad.token,
+                entidad: entidadHistorial
             }, 20000);
             if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudo obtener el historial.');
             const datos = Array.isArray(respuesta.data) ? respuesta.data : [];
