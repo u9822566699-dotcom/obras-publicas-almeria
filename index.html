@@ -169,108 +169,6 @@
             .identidad-area { font-size: 12px; }
         }
 
-
-        /* PANEL DE ACCIONES DEL TECNICO */
-        /* El panel de técnicos necesita más anchura para que las acciones respiren. */
-        #vista-tecnico {
-            max-width: 1450px;
-        }
-        #vista-tecnico .tabla-incidencias {
-            min-width: 1350px;
-        }
-        #vista-tecnico .tabla-incidencias th:last-child,
-        #vista-tecnico .tabla-incidencias td:last-child {
-            min-width: 290px;
-        }
-        #vista-tecnico .tabla-incidencias th.columna-tiempos,
-        #vista-tecnico .tabla-incidencias td.columna-tiempos {
-            width: 155px;
-            min-width: 155px;
-        }
-        .tiempos-tecnico {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
-        .tiempo-tecnico-item {
-            background: #f7f9fc;
-            border: 1px solid #dfe5ec;
-            border-radius: 8px;
-            padding: 7px 8px;
-            text-align: center;
-        }
-        .tiempo-tecnico-label {
-            display: block;
-            font-size: 10px;
-            font-weight: 800;
-            color: #607080;
-            text-transform: uppercase;
-            letter-spacing: .3px;
-            line-height: 1.15;
-        }
-        .tiempo-tecnico-valor {
-            display: block;
-            margin-top: 3px;
-            font-size: 16px;
-            font-weight: 800;
-            color: #315f8c;
-            line-height: 1.1;
-        }
-        .tiempo-tecnico-sub {
-            display: block;
-            margin-top: 3px;
-            font-size: 10px;
-            color: #6c757d;
-        }
-        .acciones-tecnico-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 10px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .acciones-tecnico-grupo {
-            background: #f7f9fc;
-            border: 1px solid #dfe5ec;
-            border-radius: 10px;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .acciones-tecnico-titulo {
-            font-size: 10px;
-            font-weight: 800;
-            color: #607080;
-            text-transform: uppercase;
-            letter-spacing: .45px;
-            margin: 1px 2px 6px;
-            text-align: left;
-        }
-        .btn-accion-tecnico {
-            width: 100%;
-            min-height: 38px;
-            margin-top: 6px;
-            border: 0;
-            border-radius: 7px;
-            color: white;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 8px 10px;
-            line-height: 1.25;
-            box-shadow: 0 1px 2px rgba(0,0,0,.08);
-            transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
-        }
-        .btn-accion-tecnico:hover {
-            filter: brightness(.96);
-            transform: translateY(-1px);
-            box-shadow: 0 3px 7px rgba(0,0,0,.12);
-        }
-        .btn-accion-tecnico:first-of-type { margin-top: 0; }
-        @media (max-width: 1100px) {
-            #vista-tecnico { max-width: 100%; }
-            .acciones-tecnico-grid { grid-template-columns: 1fr; }
-        }
-
         /* ESTILOS DE FORMULARIO Y TABLAS */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 15px; margin-bottom: 20px; }
         .header-title h1 { font-size: 16px; margin: 0; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -297,57 +195,6 @@
         .btn-container { text-align: center; margin-top: 30px; display: flex; justify-content: center; }
         .btn-send { background-color: #28a745; color: white; border: none; padding: 14px 35px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); transition: all 0.3s ease; }
         .btn-send:hover { background-color: #218838; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(40, 167, 69, 0.4); }
-
-        /* Bloqueo durante el envío de una incidencia para evitar dobles pulsaciones. */
-        #bloqueo-envio-incidencia {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255,255,255,0.72);
-            backdrop-filter: blur(2px);
-            cursor: wait;
-        }
-        #bloqueo-envio-incidencia .bloqueo-envio-caja {
-            min-width: 280px;
-            max-width: 90%;
-            padding: 22px 26px;
-            background: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 10px;
-            box-shadow: 0 8px 28px rgba(0,0,0,0.16);
-            text-align: center;
-            color: #333;
-        }
-        #bloqueo-envio-incidencia .spinner-envio {
-            width: 34px;
-            height: 34px;
-            margin: 0 auto 12px auto;
-            border: 4px solid #e9ecef;
-            border-top-color: #d9251d;
-            border-radius: 50%;
-            animation: simunGiro 0.8s linear infinite;
-        }
-        @keyframes simunGiro { to { transform: rotate(360deg); } }
-        .opciones-post-registro {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 18px;
-        }
-        .btn-post-registro {
-            border: none;
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-post-registro.inicio { background: #6c757d; color: #fff; }
-        .btn-post-registro.nueva { background: #d9251d; color: #fff; }
-        .btn-post-registro:hover { filter: brightness(0.95); }
 
         .btn-volver { background-color: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; margin-bottom: 15px; }
         .oculto { display: none !important; }
@@ -483,70 +330,6 @@
             input, select, textarea { border: 1px solid #aaa !important; background: transparent !important; }
             .tabla-incidencias th, .tabla-incidencias td { border: 1px solid #999 !important; }
         }
-
-        /* Actividad reciente compacta */
-        #panel-cambios-recientes {
-            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%) !important;
-            border: 1px solid #e2e8f0 !important;
-            border-left: 3px solid #0d6efd !important;
-            border-radius: 8px !important;
-            padding: 8px 11px !important;
-            margin-bottom: 10px !important;
-        }
-        #panel-cambios-recientes .actividad-cabecera {
-            margin-bottom: 5px !important;
-        }
-        #panel-cambios-recientes .actividad-lista {
-            display: grid;
-            gap: 0;
-            max-height: 126px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-        .actividad-item {
-            display: grid;
-            grid-template-columns: 18px minmax(0, 1fr) auto;
-            align-items: center;
-            gap: 7px;
-            min-height: 31px;
-            padding: 5px 4px;
-            border-top: 1px solid #edf0f3;
-            font-size: 11px;
-            line-height: 1.25;
-        }
-        .actividad-item:first-child { border-top: 0; }
-        .actividad-icono {
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-        .actividad-mensaje {
-            min-width: 0;
-            color: #495057;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .actividad-ref {
-            font-weight: 700;
-            color: #212529;
-            margin-right: 4px;
-        }
-        .actividad-fecha {
-            white-space: nowrap;
-            font-size: 10px;
-            color: #8a939b;
-            text-align: right;
-        }
-        @media (max-width: 700px) {
-            .actividad-fecha { display: none; }
-            .actividad-item { grid-template-columns: 18px minmax(0, 1fr); }
-            #panel-cambios-recientes .actividad-lista { max-height: 145px; }
-        }
-
     </style>
 </head>
 <body>
@@ -694,30 +477,19 @@
     </button>
 </div>
 
-<!-- ACTIVIDAD RECIENTE -->
-    <div id="panel-cambios-recientes">
-        <div class="actividad-cabecera" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-            <strong style="font-size:12px; color:#343a40;">🔔 Últimos cambios de estado</strong>
-            <button type="button" class="btn-panel-nav btn-panel-refresh" style="font-size:10px; padding:3px 7px;" onclick="cargarCambiosRecientes()">🔄 Actualizar</button>
+<!-- KPIs -->
+    <div class="grid-3" style="margin-bottom: 20px;">
+        <div style="background:#f8f9fa; border-left:4px solid #0d6efd; padding:12px; border-radius:4px; text-align:center;">
+            <span style="font-size:12px; color:#666; font-weight:bold;">TOTAL REGISTRADAS</span>
+            <div id="kpi-total" style="font-size:22px; font-weight:bold; color:#333;">0</div>
         </div>
-        <div id="lista-cambios-recientes" class="actividad-lista">
-            <div style="font-size:11px; color:#777; padding:4px 2px;">Cargando actividad...</div>
+        <div style="background:#fff8e6; border-left:4px solid #ffc107; padding:12px; border-radius:4px; text-align:center;">
+            <span style="font-size:12px; color:#856404; font-weight:bold;">PENDIENTES</span>
+            <div id="kpi-pendientes" style="font-size:22px; font-weight:bold; color:#856404;">0</div>
         </div>
-    </div>
-
-    <!-- KPIs -->
-    <div class="grid-3" style="margin-bottom: 14px; gap:8px;">
-        <div style="background:#f8f9fa; border-left:4px solid #0d6efd; padding:7px 8px; border-radius:4px; text-align:center;">
-            <span style="font-size:10px; color:#666; font-weight:bold;">TOTAL REGISTRADAS</span>
-            <div id="kpi-total" style="font-size:18px; font-weight:bold; color:#333;">0</div>
-        </div>
-        <div style="background:#fff8e6; border-left:4px solid #ffc107; padding:7px 8px; border-radius:4px; text-align:center;">
-            <span style="font-size:10px; color:#856404; font-weight:bold;">PENDIENTES</span>
-            <div id="kpi-pendientes" style="font-size:18px; font-weight:bold; color:#856404;">0</div>
-        </div>
-        <div style="background:#e8f5e9; border-left:4px solid #28a745; padding:7px 8px; border-radius:4px; text-align:center;">
-            <span style="font-size:10px; color:#155724; font-weight:bold;">COMPLETADAS</span>
-            <div id="kpi-completadas" style="font-size:18px; font-weight:bold; color:#155724;">0</div>
+        <div style="background:#e8f5e9; border-left:4px solid #28a745; padding:12px; border-radius:4px; text-align:center;">
+            <span style="font-size:12px; color:#155724; font-weight:bold;">COMPLETADAS</span>
+            <div id="kpi-completadas" style="font-size:22px; font-weight:bold; color:#155724;">0</div>
         </div>
     </div>
 
@@ -783,8 +555,7 @@
                     <th>Oficio / Tipo</th>
                     <th>Detalles / Contacto</th>
                     <th style="width: 130px;">Estado</th>
-                    <th class="columna-tiempos" style="width: 155px; text-align: center;">Tiempos</th>
-                    <th style="width: 290px; min-width: 290px; text-align: center;">Acciones</th>
+                    <th style="width: 130px; text-align: center;">Acciones</th>
                 </tr>
             </thead>
             <tbody id="tabla-tecnico-body">
@@ -928,23 +699,6 @@
         <button type="button" class="btn-volver" style="margin-top:15px;" onclick="cerrarResultadoVisita()">Cancelar</button>
     </div>
 </div>
-<div id="modal-cierre-directo" class="modal-overlay oculto" style="z-index:10002;">
-    <div class="modal-box">
-        <h3 style="color:#343a40;">🔒 Cerrar incidencia directamente</h3>
-        <p style="font-size:13px; color:#666; line-height:1.5;">
-            Utilice esta opción cuando la incidencia se haya resuelto mediante una actuación puntual, por ejemplo, <strong>fuera del contrato de mantenimiento</strong>.
-        </p>
-        <input type="hidden" id="modal-cierre-directo-ref">
-        <div class="form-group">
-            <label for="modal-cierre-directo-motivo">Motivo / actuación realizada *</label>
-            <textarea id="modal-cierre-directo-motivo" style="min-height:110px;" placeholder="Describa brevemente la actuación realizada o el motivo por el que se cierra la incidencia..."></textarea>
-        </div>
-        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
-            <button type="button" class="btn-volver" style="margin:0;" onclick="cerrarModalCierreDirecto()">Cancelar</button>
-            <button type="button" class="btn-consultar" style="background:#343a40;" onclick="confirmarCierreDirecto()">🔒 Cerrar incidencia</button>
-        </div>
-    </div>
-</div>
 <div id="modal-completar" class="modal-overlay oculto">
     <div class="modal-box">
         <h3>✓ Finalizar intervención e informe</h3>
@@ -1028,28 +782,9 @@
 <!-- VISTA FORMULARIO PÚBLICO COMPLETO -->
 <div id="vista-formulario" style="display: none;">
 
-    <div id="bloqueo-envio-incidencia" aria-live="polite" aria-busy="true">
-        <div class="bloqueo-envio-caja">
-            <div class="spinner-envio"></div>
-            <strong>Enviando incidencia...</strong>
-            <div style="margin-top:6px; font-size:12px; color:#666;">No pulse ningún botón. Espere a recibir la confirmación.</div>
-        </div>
-    </div>
-
     <div id="entidad-session-banner" style="display:block; max-width:900px; margin:0 auto 10px auto; background:#e8f5e9; border:1px solid #a5d6a7; padding:10px 14px; border-radius:6px; font-size:13px;">
         🔐 <strong>Acceso autorizado:</strong> <span id="entidad-session-name"></span>
         <button type="button" onclick="cerrarSesionEntidad()" style="float:right; border:none; background:transparent; color:#b02a37; font-weight:bold; cursor:pointer;">Cerrar sesión</button>
-    </div>
-
-    <div id="historial-entidad-panel" class="page-container" style="margin-top:10px; padding:18px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
-            <div class="section-title" style="margin:0;">📋 Historial de incidencias</div>
-            <button type="button" class="btn-panel-nav btn-panel-refresh" onclick="cargarHistorialEntidad()">🔄 Actualizar</button>
-        </div>
-        <div style="font-size:12px; color:#6c757d; margin-bottom:10px;">Registro de las últimas incidencias de esta entidad, ordenadas de la más reciente a la más antigua.</div>
-        <div id="historial-entidad-contenido" style="overflow-x:auto;">
-            <div style="text-align:center; padding:16px; color:#777;">Cargando historial...</div>
-        </div>
     </div>
 
     <div class="page-container" style="margin-top:10px; padding:18px;">
@@ -1119,10 +854,6 @@
             </div>
             <small style="display: block; margin-top: 8px; color: #555;">Guarde ambos datos para poder realizar consultas sobre el estado de su solicitud.
             <div id="resultado-visita-inicial" style="display:none; margin-top:12px; padding:9px; border-radius:5px; background:#f3eefe; color:#4b2a75; font-weight:600;"></div></small>
-            <div class="opciones-post-registro">
-                <button type="button" class="btn-post-registro inicio" onclick="volverInicioTrasRegistro()">← Volver a la pantalla de inicio</button>
-                <button type="button" class="btn-post-registro nueva" onclick="realizarOtraIncidencia()">＋ Realizar otra incidencia</button>
-            </div>
         </div>
 
         <div class="header">
@@ -1155,7 +886,7 @@
 
         <div id="grupo-centro-autorizado" class="form-group" style="display:none;">
             <label for="centro-select-autorizado"><span id="label-centro-autorizado">Centro o colegio *</span></label>
-            <select id="centro-select-autorizado" onchange="actualizarCentro(); if (sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal) cargarHistorialEntidad();">
+            <select id="centro-select-autorizado" onchange="actualizarCentro()">
                 <option value="">Seleccione primero el tipo de entidad...</option>
             </select>
         </div>
@@ -1271,13 +1002,13 @@
         </div>
 
         <div class="btn-container">
-            <button type="button" class="btn-send" id="btn-enviar-incidencia" onclick="enviarPorCorreo()">Enviar Notificación</button>
+            <button type="button" class="btn-send" onclick="enviarPorCorreo()">Enviar Notificación</button>
         </div>
     </div>
 </div>
 
 <script>
-    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbxt7L-G9FX8FFdCY-h6scwmo7giO3peirL-rrSOB317vjtjA13C4cbD8tgPJJ4h38Ud/exec";
+    const URL_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbxAl8b-0Vv_IYnUTjNHT8F-7npmC1MPLZlsY9KvW7AVN-CjU9QTce2LztyNNHLrQx8bmA/exec";
 
     const mapaOficiosUsuarios = {
         "fontaneria": "Fontanería",
@@ -1327,44 +1058,633 @@
         }
     }
 
-    let edificiosMunicipales = [];
-    let edificiosMunicipalesCargados = false;
-
-    async function cargarEdificiosMunicipalesDesdeSheet() {
-        if (edificiosMunicipalesCargados && Array.isArray(edificiosMunicipales)) {
-            return edificiosMunicipales;
-        }
-
-        try {
-            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action: 'listarEdificiosMunicipales'
-            }, 20000);
-
-            if (respuesta.status !== 'SUCCESS' || !Array.isArray(respuesta.data)) {
-                throw new Error(respuesta.message || 'No se pudieron cargar los edificios municipales.');
-            }
-
-            edificiosMunicipales = respuesta.data.map(function(item) {
-                return {
-                    Tipo: 'Edificio / dependencia municipal',
-                    Nombre: item.nombre || '',
-                    Area: item.area || '',
-                    'Dirección': item.direccion || '',
-                    'Código postal': item.cp || '',
-                    Localidad: item.localidad || '',
-                    Municipio: item.municipio || ''
-                };
-            }).filter(function(item) { return item.Nombre; });
-
-            edificiosMunicipalesCargados = true;
-            return edificiosMunicipales;
-        } catch (err) {
-            edificiosMunicipales = [];
-            edificiosMunicipalesCargados = false;
-            console.error('Error al cargar edificios municipales desde Google Sheets:', err);
-            throw err;
-        }
+    const edificiosMunicipales = [
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Archivo Municipal",
+        "Categoría": "Archivos y bibliotecas",
+        "Dirección": "Calle Arráez, 15",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Biblioteca Central",
+        "Categoría": "Archivos y bibliotecas",
+        "Dirección": "Calle de los Santos Zárate, 13",
+        "Código postal": "4004",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Biblioteca De Los Ángeles",
+        "Categoría": "Archivos y bibliotecas",
+        "Dirección": "Plaza de los Ángeles, s/n",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Biblioteca De El Alquian",
+        "Categoría": "Archivos y bibliotecas",
+        "Dirección": "Calle Magallanes, s/n",
+        "Código postal": "4130",
+        "Localidad": "El Alquián"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Biblioteca Cabo De Gata",
+        "Categoría": "Archivos y bibliotecas",
+        "Dirección": "Calle de la Iglesia, s/n",
+        "Código postal": "4150",
+        "Localidad": "Cabo de Gata"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Biblioteca De La Chanca",
+        "Categoría": "Archivos y bibliotecas",
+        "Dirección": "Avenida del Mar, s/n",
+        "Código postal": "4002",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Servicios Sociales Comunitarios Ciudad Jardín",
+        "Categoría": "Centros sociales",
+        "Dirección": "Plaza Colon, Nº 17",
+        "Código postal": "4007",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Unidad De Trabajo Social La Cañada",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de la Iglesia, s/n",
+        "Código postal": "4120",
+        "Localidad": "La Cañada de San Urbano"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Unidad De Trabajo Social El Alquián",
+        "Categoría": "Centros sociales",
+        "Dirección": "Plaza de la Iglesia, 1",
+        "Código postal": "4130",
+        "Localidad": "El Alquián"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Unidad De Trabajo Social Cabo De Gata",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de la Iglesia, s/n",
+        "Código postal": "4150",
+        "Localidad": "Cabo de Gata"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Servicios Sociales Comunitarios Rambla Belén Amatisteros",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de los Amatistas, s/n",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Unidad De Trabajo Social Quemadero Fuentecica",
+        "Categoría": "Centros sociales",
+        "Dirección": "Plaza del Quemadero, s/n",
+        "Código postal": "4003",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Servicios Sociales Comunitarios Casco Antiguo",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de la Almedina, 16",
+        "Código postal": "4002",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Servicios Sociales Comunitarios Nueva Andalucía",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de la Italia, s/n",
+        "Código postal": "4006",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "ERACIS El Puche",
+        "Categoría": "Centros sociales",
+        "Dirección": "Avda Mare Nostrum s/n",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Municipal De Acogida",
+        "Categoría": "Centros sociales",
+        "Dirección": "Carretera de Níjar-Los Molinos, 134",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Municipal Del Mayor Mediterráneo Oliveros",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de los Soldados, s/n",
+        "Código postal": "4004",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Municipal De Mayores Santa Isabel",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de Santa Isabel, s/n",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Municipal De Mayores La Cañada",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de la Iglesia, s/n",
+        "Código postal": "4120",
+        "Localidad": "La Cañada de San Urbano"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Municipal De Mayores El Alquian",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle Magallanes, s/n",
+        "Código postal": "4130",
+        "Localidad": "El Alquián"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Municipal De Mayores El Puche",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de la Amistad, s/n",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Municipal De Mayores 500 Viviendas",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle Bilbao, s/n",
+        "Código postal": "4007",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Espacio Alma",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle Alcalde Santiago Martínez Cabrejas, s/n",
+        "Código postal": "4006",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Equipamiento Social En Calle Reverenda Madre María Micaela",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle Madre María Micaela, 4",
+        "Código postal": "4008",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro De La Mujer Los Molinos",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle de la Molinera, s/n",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro De La Mujer Cortijo Grande",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle Antonio Muñoz Zamora, s/n",
+        "Código postal": "4007",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro De La Mujer Alcalde Muñoz",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle Alcalde Muñoz, 12",
+        "Código postal": "4004",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "CIS Los Almendros",
+        "Categoría": "Centros sociales",
+        "Dirección": "Calle Sierra de Tabernas, 9",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Casas Consistoriales",
+        "Categoría": "Dependencias municipales",
+        "Dirección": "Plaza de la Constitución, s/n",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Edificio Policía Local",
+        "Categoría": "Dependencias municipales",
+        "Dirección": "Avenida del Mediterráneo, 255",
+        "Código postal": "4006",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Edificio De Bomberos",
+        "Categoría": "Dependencias municipales",
+        "Dirección": "Calle Diseminados, 102 (N-340a)",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Edificio Administrativo Plaza Rincón De Espronceda",
+        "Categoría": "Dependencias municipales",
+        "Dirección": "Plaza Rincón de Espronceda, 1",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Edificio Administratvo Calle Juez",
+        "Categoría": "Dependencias municipales",
+        "Dirección": "Calle Juez, 4",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Edificio Administrativo Preventorio",
+        "Categoría": "Dependencias municipales",
+        "Dirección": "Carretera de Ronda, 94",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Órgano Gestión Tributaria",
+        "Categoría": "Dependencias municipales",
+        "Dirección": "Calle San Juan Bosco, 2",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Escuela De Adultos De La Cañada",
+        "Categoría": "Escuelas de adultos",
+        "Dirección": "Calle de la Iglesia, s/n",
+        "Código postal": "4120",
+        "Localidad": "La Cañada de San Urbano"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Escuela De Adultos De El Alquián",
+        "Categoría": "Escuelas de adultos",
+        "Dirección": "Calle Magallanes, s/n",
+        "Código postal": "4130",
+        "Localidad": "El Alquián"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Escuela De Adultos 500 Viviendas",
+        "Categoría": "Escuelas de adultos",
+        "Dirección": "Calle Carmen de Burgos, s/n",
+        "Código postal": "4007",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Escuela De Adultos De Regiones",
+        "Categoría": "Escuelas de adultos",
+        "Dirección": "Calle Grecia, s/n",
+        "Código postal": "4006",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Escuela De Adultos De Cabo De Gata",
+        "Categoría": "Escuelas de adultos",
+        "Dirección": "Calle Iglesia, s/n",
+        "Código postal": "4150",
+        "Localidad": "Cabo de Gata"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Escuela De Adultos De La Chanca",
+        "Categoría": "Escuelas de adultos",
+        "Dirección": "Avenida del Mar, s/n",
+        "Código postal": "4002",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Nave Sector 20",
+        "Categoría": "Locales y naves municipales",
+        "Dirección": "Pol. Ind. Sector 20, Calle Acebo",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Nave Rotonda El Puche",
+        "Categoría": "Locales y naves municipales",
+        "Dirección": "Avenida de Torrecárdenas, s/n",
+        "Código postal": "4009",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Naves Autovía Aeropuerto",
+        "Categoría": "Locales y naves municipales",
+        "Dirección": "Autovía Almería-Níjar, Km 7",
+        "Código postal": "4130",
+        "Localidad": "El Alquián"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Locales Municipales Rambla",
+        "Categoría": "Locales y naves municipales",
+        "Dirección": "Avenida de la Estación, s/n",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Local Mirador Norte Rambla",
+        "Categoría": "Locales y naves municipales",
+        "Dirección": "Avenida Federico García Lorca, s/n",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Mercado Central",
+        "Categoría": "Mercados",
+        "Dirección": "Obispo Orberá, s/n",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Mercado De Los Ángeles",
+        "Categoría": "Mercados",
+        "Dirección": "Plaza de los Ángeles, s/n",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Mercado Plaza Pavía",
+        "Categoría": "Mercados",
+        "Dirección": "Plaza Pavía, s/n",
+        "Código postal": "4002",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Mercado Plaza Quemadero",
+        "Categoría": "Mercados",
+        "Dirección": "Plaza del Quemadero, s/n",
+        "Código postal": "4003",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Museo De La Guitarra",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Ronda del Beato Diego Ventaja, s/n",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Museo Casa del Poeta José Valente",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Calle Jose Ángel Valente, 7",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Refugios",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Plaza de Manuel Pérez García, 1",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Casa del Cine",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Camino Romero, 1",
+        "Código postal": "4003",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Museo De Arte Espacio 2",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Plaza de Carlos Cano, s/n",
+        "Código postal": "4006",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Barrio Andalusí_Mesón Gitano",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Calle Fernandez, s/n",
+        "Código postal": "4002",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Interpretación Patrimonial",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Plaza de la Constitución, s/n",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Aljibes",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Calle Tenor Iribarne, o",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Museo Doña Pakita",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Paseo de Almería, 56",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Museo Antonio Torres",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Calle de la Guitarra, s/n",
+        "Código postal": "4120",
+        "Localidad": "La Cañada de San Urbano"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Auditorio Maestro Padilla",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Plaza Alfredo Kraus",
+        "Código postal": "4007",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Teatro Apolo",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Calle Rambla Obispo Orberá",
+        "Código postal": "4001",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Palacio de Congresos El Toyo",
+        "Categoría": "Museos y espacios culturales",
+        "Dirección": "Calle de los Juegos de Casablanca, 1",
+        "Código postal": "4131",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Oficina Periférica Cabo De Gata",
+        "Categoría": "Oficinas periféricas",
+        "Dirección": "Calle Luis Abad Carretero, 2",
+        "Código postal": "4150",
+        "Localidad": "Cabo de Gata"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Oficina Periférica De El Alquián",
+        "Categoría": "Oficinas periféricas",
+        "Dirección": "Plaza de la Iglesia, 1",
+        "Código postal": "4130",
+        "Localidad": "El Alquián"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Oficina Periférica De La Cañada",
+        "Categoría": "Oficinas periféricas",
+        "Dirección": "Plaza Antonio de Torres, 1",
+        "Código postal": "4120",
+        "Localidad": "La Cañada de San Urbano"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Oficina Periférica De Retamar Toyo",
+        "Categoría": "Oficinas periféricas",
+        "Dirección": "Paseo del Toyo, s/n",
+        "Código postal": "4131",
+        "Localidad": "Retamar"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Oficina Periférica De Los Ángeles",
+        "Categoría": "Oficinas periféricas",
+        "Dirección": "Plaza de los Ángeles, s/n",
+        "Código postal": "4005",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Oficina Periférica Ciudad Jardín",
+        "Categoría": "Oficinas periféricas",
+        "Dirección": "Plaza de la Juventud, s/n",
+        "Código postal": "4007",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Nueva Andalucía",
+        "Categoría": "Oficinas periféricas",
+        "Dirección": "Avenida de Montserrat, s/n",
+        "Código postal": "4006",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Centro Zoosanitario",
+        "Categoría": "Otros",
+        "Dirección": "Avda. Cabo de Gata, 239",
+        "Código postal": "",
+        "Localidad": "Almería"
+    },
+    {
+        "Tipo": "Edificio / dependencia municipal",
+        "Nombre": "Oficina Sindical CCOO",
+        "Categoría": "Otros",
+        "Dirección": "Pablo Iglesias, 25 1º",
+        "Código postal": "4003",
+        "Localidad": "Almería"
     }
+];
+
+    const centrosEducativos = {
+        "CEIP Adela Díaz": { direccion: "Av. Padre Méndez, 35", cp: "04006", localidad: "Almería", municipio: "Almería" },
+        "CEIP Alfredo Molina Martín": { direccion: "C. Fernando de Rojas, 4", cp: "04008", localidad: "Almería", municipio: "Almería" },
+        "CEIP Ángel Suquía": { direccion: "C. Sierra de Bacares, 1", cp: "04009", localidad: "Almería", municipio: "Almería" },
+        "CEIP Ave María del Diezmo": { direccion: "Carrera del Mamí, 110", cp: "04009", localidad: "Almería", municipio: "Almería" },
+        "CEIP Ave María del Quemadero": { direccion: "C. Barranco Bolas, 7", cp: "04003", localidad: "Almería", municipio: "Almería" },
+        "CEIP Colonia Araceli": { direccion: "C. Virgen de la Piedad, 26", cp: "04008", localidad: "Almería", municipio: "Almería" },
+        "CEIP El Puche": { direccion: "Avda. Mare Nostrum, 56", cp: "04009", localidad: "Almería", municipio: "Almería" },
+        "CEIP Europa José Ramos Santander": { direccion: "C. Madre María Aznar, 272", cp: "04009", localidad: "Almería", municipio: "Almería" },
+        "CEIP Francisco de Goya": { direccion: "C. Cruz de Caravaca, 34", cp: "04008", localidad: "Almería", municipio: "Almería" },
+        "CEIP Freinet": { direccion: "Ctra. de Ronda, 100", cp: "04006", localidad: "Almería", municipio: "Almería" },
+        "CEIP Giner de los Ríos": { direccion: "C. Cervantes, s/n", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP Ginés Morata": { direccion: "C. Sahara, 137", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP Indalo": { direccion: "C. Granada, 249", cp: "04008", localidad: "Almería", municipio: "Almería" },
+        "CEIP Inés Relaño": { direccion: "C. Gral. Luque, 31", cp: "04002", localidad: "Almería", municipio: "Almería" },
+        "CEIP Josefina Baro Soler": { direccion: "C. Mare Nostum, s/n", cp: "04009", localidad: "Almería", municipio: "Almería" },
+        "CEIP Juan Ramón Jiménez": { direccion: "C. Alfarerías, 43", cp: "04008", localidad: "Almería", municipio: "Almería" },
+        "CEIP La Chanca": { direccion: "Avda. del Mar, s/n", cp: "04002", localidad: "Almería", municipio: "Almería" },
+        "CEIP Lope de Vega": { direccion: "C. de Chile, 42", cp: "04003", localidad: "Almería", municipio: "Almería" },
+        "CEIP Los Almendros": { direccion: "C. Buen Amigo, s/n", cp: "04009", localidad: "Almería", municipio: "Almería" },
+        "CEIP Los Millares": { direccion: "Avda. Santa Isabel, s/n", cp: "04006", localidad: "Almería", municipio: "Almería" },
+        "CEIP Luis Siret": { direccion: "Avda. Santa Isabel, 29", cp: "04002", localidad: "Almería", municipio: "Almería" },
+        "CEIP Madre de la Luz": { direccion: "C. Calzada de Castro, 3", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP Mar Mediterráneo": { direccion: "C. Jose Morales Abad, 9", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP Nueva Almería": { direccion: "C. Fernando Fernán Gómez, 33", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP Rafael Alberti": { direccion: "C. Marina, 9", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP San Fernando": { direccion: "C. Rodrigo Vivas Miras, 28", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP San Gabriel": { direccion: "C. Villa de Artés, 13", cp: "04005", localidad: "Almería", municipio: "Almería" },
+        "CEIP San Luis": { direccion: "C. San Luis, s/n", cp: "04005", localidad: "Almería", municipio: "Almería" },
+        "CEIP San Valentín": { direccion: "C. de las Alpujarras, s/n", cp: "04005", localidad: "Almería", municipio: "Almería" },
+        "CEIP Santa Isabel": { direccion: "C. de la Molineta, s/n", cp: "04009", localidad: "Almería", municipio: "Almería" },
+        "CEIP Virgen de Loreto": { direccion: "C. Jose María Artero, 12", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP Virgen del Mar": { direccion: "C. Granada, 159", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEP Padre Méndez": { direccion: "Av. Padre Méndez, 18", cp: "04006", localidad: "Almería", municipio: "Almería" },
+        "CEIP San Bernardo": { direccion: "C. Manuel del Águila Ortega, s/n", cp: "04130", localidad: "El Alquián", municipio: "Almería" },
+        "CEIP San Vicente": { direccion: "C. de la Iglesia, s/n", cp: "04130", localidad: "El Alquián", municipio: "Almería" },
+        "CEIP Virgen del Mar. Cabo de Gata": { direccion: "C. de la Iglesia, s/n", cp: "04150", localidad: "Cabo de Gata", municipio: "Almería" },
+        "CEIP Ferrer Guardia": { direccion: "Paraje del Charco s/n", cp: "04120", localidad: "La Cañada de San Urbano", municipio: "Almería" },
+        "CEIP San Indalecio": { direccion: "C. de la Mar de la Cañada, s/n", cp: "04120", localidad: "La Cañada de San Urbano", municipio: "Almería" },
+        "CEIP Torremar": { direccion: "Av. de los Juegos del Mediterráneo, s/n", cp: "04131", localidad: "El Toyo, Retamar", municipio: "Almería" },
+        "CEE Princesa Sofía": { direccion: "C. Pablo Neruda, 5", cp: "04008", localidad: "Almería", municipio: "Almería" },
+        "CEE Rosa Relaño": { direccion: "C. de los Limoneros, 15", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEI Mar de Alborán": { direccion: "C. Padre Mendez, s/n", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "CEIP Rodríguez Espinosa": { direccion: "C. Principal, s/n", cp: "04131", localidad: "Cuevas de los Medina", municipio: "Almería" },
+        "CEI Maestro Padilla": { direccion: "C. Grecia, 1", cp: "04007", localidad: "Almería", municipio: "Almería" },
+        "Guardería De El Alquián": { direccion: "Calle Américo Vespucio, s/n", cp: "04130", localidad: "El Alquián", municipio: "Almería" },
+        "Guardería De Los Almendros": { direccion: "Calle Sierra de Gredos, s/n", cp: "04008", localidad: "Almería", municipio: "Almería" }
+    };
 
     const tiposPorOficio = {
         "Albañilería": ["Fuentes", "Solados / Azulejos", "Tabiquería / Paramentos", "Arquetas", "OTROS"],
@@ -1417,7 +1737,7 @@
 
         document.getElementById('titulo-login-entidad').textContent = 'PERFIL AUTORIZADO';
         document.getElementById('texto-login-entidad').textContent =
-            'Introduzca sus credenciales de perfil autorizado. El sistema determinará automáticamente las áreas municipales y los edificios que tiene asignados.';
+            'Introduzca sus credenciales para acceder como perfil autorizado y seleccionar el centro o entidad para el que realiza el aviso.';
         document.getElementById('usuario-entidad').value = '';
         document.getElementById('password-entidad').value = '';
         document.getElementById('login-entidad-error').style.display = 'none';
@@ -1455,18 +1775,15 @@
             }
 
             sesionEntidad = respuesta;
-            const panelHistorialEntidad = document.getElementById('historial-entidad-panel');
-            if (panelHistorialEntidad) panelHistorialEntidad.style.display = (respuesta.rol === 'ENTIDAD' || respuesta.esPerfilAutorizadoMunicipal) ? 'block' : 'none';
 
             if (respuesta.rol === 'AUTORIZADO') {
                 modoAccesoEntidad = 'AUTORIZADO';
-                tipoEntidadActual = respuesta.esPerfilAutorizadoMunicipal ? 'MUNICIPAL' : '';
+                tipoEntidadActual = '';
                 prepararFormularioAutorizado();
                 return;
             }
 
             modoAccesoEntidad = 'ENTIDAD';
-            cargarHistorialEntidad();
 
             // Para un perfil ENTIDAD se mantiene el comportamiento anterior:
             // la cuenta solo puede trabajar con su propia entidad.
@@ -1552,11 +1869,6 @@
             seccion.textContent = 'Datos del edificio o dependencia municipal';
             label.textContent = 'Edificio o dependencia municipal (MD) *';
             input.placeholder = 'Escriba o seleccione el edificio o dependencia municipal...';
-            try {
-                await cargarEdificiosMunicipalesDesdeSheet();
-            } catch (err) {
-                input.placeholder = 'No se han podido cargar los edificios municipales';
-            }
             nombres = edificiosMunicipales.map(item => item['Nombre']).filter(Boolean);
         } else {
             seccion.textContent = 'Datos del centro o colegio';
@@ -1586,7 +1898,7 @@
             // Solo repetimos operaciones de lectura/autenticación. Nunca repetimos
             // operaciones que puedan escribir datos para evitar duplicados.
             const accionesReintentables = new Set([
-                'login', 'loginEntidad', 'consultar', 'historialEntidad', 'listarCambiosRecientes',
+                'login', 'loginEntidad', 'consultar',
                 'listarIncidenciasNuevas', 'listarAsociaciones', 'listarTodoTecnico',
                 'listarPorOficio', 'listarBrigada', 'listarSolicitudesInspeccion'
             ]);
@@ -1684,7 +1996,7 @@
         const filtroAut = document.getElementById('filtro-tipo-autorizado');
         const centroAut = document.getElementById('centro-select-autorizado');
         if (filtroAut) filtroAut.value = "";
-        if (centroAut) centroAut.innerHTML = '<option value="">Seleccione el edificio / entidad...</option>';
+        if (centroAut) centroAut.innerHTML = '<option value="">Seleccione primero el tipo de entidad...</option>';
         document.getElementById('direccion').value = "";
         document.getElementById('codigo_postal').value = "";
         document.getElementById('localidad').value = "";
@@ -1709,13 +2021,11 @@
         const resultadoVisita = document.getElementById('resultado-visita-inicial');
         if (resultadoVisita) { resultadoVisita.style.display = 'none'; resultadoVisita.textContent = ''; }
         document.getElementById('caja-referencia').style.display = 'none';
-        const bloqueoEnvio = document.getElementById('bloqueo-envio-incidencia');
-        if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
         if (document.getElementById('ref-buscar-entidad')) document.getElementById('ref-buscar-entidad').value = '';
         if (document.getElementById('pin-buscar-entidad')) document.getElementById('pin-buscar-entidad').value = '';
         if (document.getElementById('resultado-consulta-entidad')) document.getElementById('resultado-consulta-entidad').innerHTML = '';
         
-        const btnEnviar = document.getElementById('btn-enviar-incidencia');
+        const btnEnviar = document.querySelector('.btn-send');
         if (btnEnviar) {
             btnEnviar.disabled = false;
             btnEnviar.textContent = "Enviar Notificación";
@@ -1727,85 +2037,44 @@
         ocultarTodasLasVistas();
         resetearFormulario();
 
-        const esMunicipal = !!(sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal);
-        const filtro = document.getElementById('grupo-filtro-autorizado');
-        const grupoCentroNormal = document.getElementById('grupo-centro-normal');
-        const grupoCentroAut = document.getElementById('grupo-centro-autorizado');
-        const labelCentro = document.getElementById('label-centro-autorizado');
-
-        if (esMunicipal) {
-            tipoEntidadActual = 'MUNICIPAL';
-            if (filtro) filtro.style.display = 'none';
-            if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
-            if (grupoCentroAut) grupoCentroAut.style.display = 'block';
-            if (labelCentro) labelCentro.textContent = 'Edificio o dependencia municipal *';
-        } else {
-            if (filtro) filtro.style.display = 'block';
-            if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
-            if (grupoCentroAut) grupoCentroAut.style.display = 'block';
-            if (labelCentro) labelCentro.textContent = 'Centro / entidad *';
-        }
+        document.getElementById('grupo-filtro-autorizado').style.display = 'block';
+        document.getElementById('grupo-centro-normal').style.display = 'none';
+        document.getElementById('grupo-centro-autorizado').style.display = 'block';
+        document.getElementById('seccion-entidad').textContent = 'Selección de centro o entidad para el aviso';
+        document.getElementById('label-centro-autorizado').textContent = 'Centro / entidad *';
 
         ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
             document.getElementById(id).readOnly = true;
         });
 
         document.getElementById('entidad-session-banner').style.display = 'block';
-        const areaTexto = esMunicipal && Array.isArray(sesionEntidad.areasAutorizadas)
-            ? ' — Área: ' + sesionEntidad.areasAutorizadas.join(', ')
-            : '';
         document.getElementById('entidad-session-name').textContent =
-            'PERFIL AUTORIZADO — ' + (sesionEntidad.perfil || sesionEntidad.nombreUsuario || sesionEntidad.usuario || 'Usuario autorizado') + areaTexto;
+            'PERFIL AUTORIZADO — ' + (sesionEntidad.nombreUsuario || sesionEntidad.usuario || 'Usuario autorizado');
         document.getElementById('vista-formulario').style.display = 'block';
         window.scrollTo(0, 0);
-
-        if (esMunicipal) {
-            actualizarSelectorAutorizado().then(() => {
-                const select = document.getElementById('centro-select-autorizado');
-                if (select) {
-                    select.value = '';
-                    document.getElementById('historial-entidad-contenido').innerHTML = '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
-                }
-            });
-        }
     }
 
     async function actualizarSelectorAutorizado() {
-        const tipo = sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal
-            ? 'MUNICIPAL'
-            : document.getElementById('filtro-tipo-autorizado').value;
+        const tipo = document.getElementById('filtro-tipo-autorizado').value;
         const select = document.getElementById('centro-select-autorizado');
         const label = document.getElementById('label-centro-autorizado');
         if (!select) return;
 
         tipoEntidadActual = tipo;
-        select.innerHTML = '<option value="">Seleccione el edificio / entidad...</option>';
+        select.innerHTML = '<option value="">Seleccione el centro / entidad...</option>';
 
         let nombres = [];
-        if (tipo === 'MUNICIPAL' && sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal) {
-            label.textContent = 'Edificio o dependencia municipal *';
-            const permitidos = Array.isArray(sesionEntidad.edificiosAutorizados) ? sesionEntidad.edificiosAutorizados : [];
-            edificiosMunicipales = permitidos.map(function(item) {
-                return {
-                    Tipo: 'Edificio / dependencia municipal',
-                    Nombre: item.nombre || '',
-                    Area: item.area || '',
-                    'Dirección': item.direccion || '',
-                    'Código postal': item.cp || '',
-                    Localidad: item.localidad || '',
-                    Municipio: item.municipio || ''
-                };
-            }).filter(function(item) { return item.Nombre; });
-            nombres = edificiosMunicipales.map(item => item.Nombre);
-        } else if (tipo === 'ASOCIACION') {
+        if (tipo === 'ASOCIACION') {
             label.textContent = 'Asociación vecinal *';
-            try { await cargarAsociacionesDesdeSheet(); }
-            catch (err) { select.innerHTML = '<option value="">No se han podido cargar las asociaciones...</option>'; return; }
+            try {
+                await cargarAsociacionesDesdeSheet();
+            } catch (err) {
+                select.innerHTML = '<option value="">No se han podido cargar las asociaciones...</option>';
+                return;
+            }
             nombres = asociacionesVecinales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipo === 'MUNICIPAL') {
             label.textContent = 'Edificio o dependencia municipal *';
-            try { await cargarEdificiosMunicipalesDesdeSheet(); }
-            catch (err) { select.innerHTML = '<option value="">No se han podido cargar los edificios...</option>'; return; }
             nombres = edificiosMunicipales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipo === 'COLEGIO') {
             label.textContent = 'Centro o colegio *';
@@ -2348,16 +2617,9 @@
             return;
         }
 
-        const btnEnviar = document.getElementById('btn-enviar-incidencia');
-        const bloqueoEnvio = document.getElementById('bloqueo-envio-incidencia');
-
-        // Bloqueamos toda la pantalla de trabajo mientras el servidor responde.
-        // Esto evita que una doble pulsación genere dos incidencias distintas.
-        if (bloqueoEnvio) bloqueoEnvio.style.display = 'flex';
-        if (btnEnviar) {
-            btnEnviar.disabled = true;
-            btnEnviar.textContent = "Registrando incidencia...";
-        }
+        const btnEnviar = document.querySelector('.btn-send');
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = "Registrando incidencia...";
 
         const datos = {
             action: 'crearIncidencia',
@@ -2398,61 +2660,18 @@
                         resultadoVisita2.style.display = 'none';
                     }
                 }
-                if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
                 btnEnviar.parentElement.style.display = 'none';
-                // La confirmación queda visible en pantalla junto con las dos acciones posibles.
-                // El usuario ya no necesita cerrar un alert para continuar.
+                alert("Notificación registrada con éxito." + (solicitarVisita ? "\n\nTambién se ha solicitado una visita / valoración técnica." : "") + "\n\nReferencia: " + respuesta.ref + "\nPIN: " + respuesta.pin);
                 setTimeout(() => window.print(), 300);
             } else {
                 throw new Error(respuesta.message || "El servidor no pudo registrar la incidencia.");
             }
         } catch (err) {
             console.error("Fallo al registrar la incidencia:", err);
-            if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
             alert("❌ No se ha podido registrar la incidencia.\n\n" + (err.message || err));
             btnEnviar.disabled = false;
             btnEnviar.textContent = "Enviar Notificación";
         }
-    }
-
-    function volverInicioTrasRegistro() {
-        const bloqueo = document.getElementById('bloqueo-envio-incidencia');
-        if (bloqueo) bloqueo.style.display = 'none';
-        mostrarPortada();
-    }
-
-    async function realizarOtraIncidencia() {
-        const bloqueo = document.getElementById('bloqueo-envio-incidencia');
-        if (bloqueo) bloqueo.style.display = 'none';
-
-        const caja = document.getElementById('caja-referencia');
-        if (caja) caja.style.display = 'none';
-
-        // Conservamos la sesión y, para un perfil ENTIDAD, volvemos a cargar
-        // automáticamente sus datos. Para un perfil AUTORIZADO se deja listo
-        // el selector para escoger de nuevo el centro/entidad.
-        if (modoAccesoEntidad === 'AUTORIZADO') {
-            prepararFormularioAutorizado();
-            return;
-        }
-
-        resetearFormulario();
-        if (sesionEntidad && sesionEntidad.token) {
-            await actualizarSelectorEntidad();
-            const select = document.getElementById('centro-select');
-            if (select) {
-                select.value = sesionEntidad.entidad || '';
-                actualizarCentro();
-            }
-            ['direccion','codigo_postal','localidad','municipio'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.readOnly = true;
-            });
-            document.getElementById('entidad-session-name').textContent =
-                (sesionEntidad.entidad || '') + ' — ' + (sesionEntidad.nombreUsuario || '');
-        }
-        document.getElementById('vista-formulario').style.display = 'block';
-        window.scrollTo(0, 0);
     }
 
     function mostrarPanelTecnico() {
@@ -2473,14 +2692,13 @@
 
         document.getElementById('vista-tecnico').classList.remove('oculto');
         cargarTablaTecnicoDesdeSheet();
-        cargarCambiosRecientes();
         actualizarContadorVisitas();
         window.scrollTo(0, 0);
     }
 
     async function cargarTablaTecnicoDesdeSheet() {
         const tbody = document.getElementById('tabla-tecnico-body');
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#666;">⏳ Cargando panel global...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#666;">⏳ Cargando panel global...</td></tr>';
 
         try {
             const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, { action: 'listarTodoTecnico', tokenSesion: usuarioActual.tokenSesion });
@@ -2489,109 +2707,12 @@
                 actualizarKpis(todasLasIncidenciasTecnico);
                 renderizarTrabajosEnCurso(todasLasIncidenciasTecnico);
                 renderizarTablaTecnico(todasLasIncidenciasTecnico);
-                cargarCambiosRecientes();
             } else {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#d9251d;">❌ Error al obtener datos.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ Error al obtener datos.</td></tr>';
             }
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#d9251d;">❌ Error de conexión al cargar datos.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#d9251d;">❌ Error de conexión al cargar datos.</td></tr>';
         }
-    }
-
-    async function cargarHistorialEntidad() {
-        const contenedor = document.getElementById('historial-entidad-contenido');
-        if (!contenedor || !sesionEntidad) return;
-        const esMunicipalAutorizado = sesionEntidad.rol === 'AUTORIZADO' && sesionEntidad.esPerfilAutorizadoMunicipal;
-        if (sesionEntidad.rol !== 'ENTIDAD' && !esMunicipalAutorizado) return;
-
-        const entidadHistorial = esMunicipalAutorizado
-            ? (document.getElementById('centro-select-autorizado')?.value || '')
-            : '';
-        if (esMunicipalAutorizado && !entidadHistorial) {
-            contenedor.innerHTML = '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
-            return;
-        }
-
-        contenedor.innerHTML = '<div style="text-align:center; padding:16px; color:#777;">⏳ Cargando historial...</div>';
-        try {
-            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action: 'historialEntidad',
-                tokenSesion: sesionEntidad.tokenSesion || sesionEntidad.token,
-                entidad: entidadHistorial
-            }, 20000);
-            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudo obtener el historial.');
-            const datos = Array.isArray(respuesta.data) ? respuesta.data : [];
-            if (!datos.length) {
-                contenedor.innerHTML = '<div style="text-align:center; padding:18px; color:#777;">No hay incidencias registradas todavía.</div>';
-                return;
-            }
-            let html = '<table class="tabla-incidencias" style="min-width:820px;"><thead><tr><th>Referencia</th><th>Fecha</th><th>Oficio</th><th>Trabajo</th><th>Prioridad</th><th>Estado</th><th>Finalización</th><th>Observación</th></tr></thead><tbody>';
-            datos.slice(0, 20).forEach(function(inc) {
-                const estado = String(inc.estado || '');
-                let color = '#6c757d';
-                if (estado.indexOf('Aceptada') === 0) color = '#198754';
-                else if (estado === 'Inicio') color = '#0d6efd';
-                else if (estado === 'Completada' || estado === 'Cerrada') color = '#198754';
-                else if (estado.indexOf('Rechazada') === 0) color = '#dc3545';
-                const motivoRechazo = String(inc.motivoRechazoTecnico || '').trim();
-                const observacion = motivoRechazo
-                    ? '<div style="background:#fff5f5;border-left:3px solid #dc3545;padding:7px 9px;border-radius:4px;white-space:pre-line;"><strong style="color:#b02a37;">✕ Motivo del rechazo:</strong><br>' + escaparHtml(motivoRechazo) + '</div>'
-                    : '—';
-                html += '<tr>' +
-                    '<td style="font-weight:bold;">' + escaparHtml(inc.ref) + '</td>' +
-                    '<td>' + escaparHtml(formatearFechaVisible(inc.fecha)) + '</td>' +
-                    '<td>' + escaparHtml(inc.oficio || '—') + '</td>' +
-                    '<td>' + escaparHtml(inc.trabajo || '—') + '</td>' +
-                    '<td>' + escaparHtml(inc.prioridad || 'NORMAL') + '</td>' +
-                    '<td><span style="font-weight:bold;color:' + color + ';">' + escaparHtml(estado || '—') + '</span></td>' +
-                    '<td>' + escaparHtml(formatearFechaVisible(inc.fechaFinalizacion)) + '</td>' +
-                    '<td style="min-width:240px;">' + observacion + '</td>' +
-                    '</tr>';
-            });
-            html += '</tbody></table>';
-            contenedor.innerHTML = html;
-        } catch (err) {
-            contenedor.innerHTML = '<div style="padding:14px; background:#fff3cd; border:1px solid #ffe69c; color:#664d03; border-radius:5px;">❌ ' + escaparHtml(err.message || String(err)) + '</div>';
-        }
-    }
-
-    async function cargarCambiosRecientes() {
-        const contenedor = document.getElementById('lista-cambios-recientes');
-        if (!contenedor || !usuarioActual || !usuarioActual.tokenSesion) return;
-        try {
-            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action: 'listarCambiosRecientes',
-                tokenSesion: usuarioActual.tokenSesion
-            }, 20000);
-            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudo obtener la actividad.');
-            const datos = Array.isArray(respuesta.data) ? respuesta.data : [];
-            if (!datos.length) {
-                contenedor.innerHTML = '<div style="font-size:12px; color:#777; padding:5px 0;">No hay cambios recientes registrados.</div>';
-                return;
-            }
-            contenedor.innerHTML = datos.slice(0, 10).map(function(item) {
-                const estado = String(item.estado || '');
-                let icono = '🔄';
-                if (estado.indexOf('Aceptada') === 0) icono = '✅';
-                else if (estado === 'Inicio') icono = '▶️';
-                else if (estado === 'Completada') icono = '🏁';
-                else if (estado.indexOf('Rechazada') === 0) icono = '⚠️';
-                else if (estado.indexOf('Pendiente') === 0) icono = '⏳';
-                return '<div class="actividad-item">' +
-                    '<span class="actividad-icono">' + icono + '</span>' +
-                    '<div class="actividad-mensaje"><span class="actividad-ref">' + escaparHtml(item.ref || '') + '</span>— ' + escaparHtml(item.mensaje || '') + (item.actor ? ' · ' + escaparHtml(item.actor) : '') + '</div>' +
-                    '<span class="actividad-fecha">' + escaparHtml(formatearFechaVisible(item.fecha)) + '</span>' +
-                    '</div>';
-            }).join('');
-        } catch (err) {
-            contenedor.innerHTML = '<div style="font-size:12px; color:#b02a37; padding:5px 0;">❌ No se ha podido cargar la actividad reciente.</div>';
-        }
-    }
-
-    function escaparHtml(valor) {
-        return String(valor === null || valor === undefined ? '' : valor)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     function actualizarKpis(datos) {
@@ -2670,62 +2791,6 @@
             .sort((a,b) => fechaFin(a) - fechaFin(b) || fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
 
         return urgentes.concat(especiales, pendientes, finalizadas);
-    }
-
-    function parsearFechaTecnico(valor) {
-        if (!valor || valor === 'No consta') return null;
-        const t = String(valor).trim();
-        let m = t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
-        if (m) {
-            let y = Number(m[3]);
-            if (y < 100) y += 2000;
-            const d = new Date(y, Number(m[2]) - 1, Number(m[1]), Number(m[4] || 0), Number(m[5] || 0), Number(m[6] || 0));
-            if (!isNaN(d.getTime())) return d;
-        }
-        m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
-        if (m) {
-            const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4] || 0), Number(m[5] || 0), Number(m[6] || 0));
-            if (!isNaN(d.getTime())) return d;
-        }
-        const d = new Date(t);
-        return isNaN(d.getTime()) ? null : d;
-    }
-
-    function calcularDiasTecnico(fechaInicio, fechaFin, enCurso) {
-        const f1 = parsearFechaTecnico(fechaInicio);
-        if (!f1) return null;
-        const f2 = fechaFin ? parsearFechaTecnico(fechaFin) : (enCurso ? new Date() : null);
-        if (!f2) return null;
-        const diferencia = Math.max(0, f2.getTime() - f1.getTime());
-        return Math.floor(diferencia / (1000 * 60 * 60 * 24));
-    }
-
-    function renderizarTiemposTecnico(inc) {
-        const finalizada = ['Completada', 'Cerrada'].includes(String(inc.estado || '').trim());
-        const fechaAceptado = inc.fechaAceptado || '';
-        const diasEspera = calcularDiasTecnico(inc.fechaRegistro, fechaAceptado, !fechaAceptado);
-        const diasActuacion = inc.fechaInicio
-            ? calcularDiasTecnico(inc.fechaInicio, inc.fechaFinalizacion || inc.fechaCierre || '', !inc.fechaFinalizacion && !inc.fechaCierre)
-            : null;
-
-        const esperaValor = diasEspera === null ? '—' : diasEspera + (diasEspera === 1 ? ' día' : ' días');
-        const esperaSub = fechaAceptado ? 'hasta aceptación' : 'en espera';
-        const actuacionValor = diasActuacion === null ? '—' : diasActuacion + (diasActuacion === 1 ? ' día' : ' días');
-        const actuacionSub = !inc.fechaInicio ? 'sin iniciar' : (finalizada ? 'hasta finalización' : 'en curso');
-
-        return `
-            <div class="tiempos-tecnico">
-                <div class="tiempo-tecnico-item">
-                    <span class="tiempo-tecnico-label">⏳ Días de espera</span>
-                    <span class="tiempo-tecnico-valor">${esperaValor}</span>
-                    <span class="tiempo-tecnico-sub">${esperaSub}</span>
-                </div>
-                <div class="tiempo-tecnico-item">
-                    <span class="tiempo-tecnico-label">🔧 Días de actuación</span>
-                    <span class="tiempo-tecnico-valor">${actuacionValor}</span>
-                    <span class="tiempo-tecnico-sub">${actuacionSub}</span>
-                </div>
-            </div>`;
     }
 
     function renderizarTablaTecnico(datos) {
@@ -2826,8 +2891,17 @@
             let botonInforme = '';
             if (inc.estado === 'Completada') {
                 botonInforme = `
-                    <button type="button" class="btn-accion-tecnico" style="background:#607080; margin-top:5px;" onclick="prepararInformePdf(${idx})">
+                    <button class="btn-accion-tabla" style="background:#2c3e50; color:white; margin-top:5px;" onclick="prepararInformePdf(${idx})">
                         📄 Informe PDF
+                    </button>
+                    <button class="btn-accion-tabla" style="background:#6f42c1; color:white; margin-top:5px;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'COMENTARIO_FINAL_TECNICO')">
+                        📝 Comentario final técnico
+                    </button>
+                `;
+            } else if (inc.estado === 'Inicio') {
+                botonInforme = `
+                    <button class="btn-accion-tabla" style="background:#6f42c1; color:white; margin-top:5px;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'OBSERVACION_TECNICA')">
+                        📝 Añadir observación técnica
                     </button>
                 `;
             }
@@ -2855,29 +2929,15 @@
                         <div><strong>Finalización:</strong> ${formatearFechaVisible(inc.fechaFinalizacion)}</div>
                     </div>
                 </td>
-                <td class="columna-tiempos" style="text-align:center; vertical-align:top;">
-                    ${renderizarTiemposTecnico(inc)}
-                </td>
-                <td style="text-align:center; vertical-align:top;">
-                    <div class="acciones-tecnico-grid">
-                        <div class="acciones-tecnico-grupo">
-                            <div class="acciones-tecnico-titulo">Prioridad y derivación</div>
-                            <button type="button" class="btn-accion-tecnico" style="background:#0d6efd;" onclick="cambiarPrioridadTecnico('${inc.ref}', '${urgente ? 'NORMAL' : 'URGENTE'}')">
-                                ${urgente ? '⬇️ Bajar prioridad' : '⚡ Hacer urgente'}
-                            </button>
-                            ${!finalizada ? (String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA'
-                                ? '<div style="margin-top:7px; font-size:11px; font-weight:800; color:#198754; background:#eaf7ef; border-radius:7px; padding:7px 5px;">🛠️ ASIGNADA A BRIGADA</div>'
-                                : `<button type="button" class="btn-accion-tecnico" style="background:#198754;" onclick="asignarIncidenciaABrigada('${inc.ref}')">🛠️ Brigada</button>`) : ''}
-                            ${!finalizada && inc.estado !== 'Rechazada por técnico' ? `<button type="button" class="btn-accion-tecnico" style="background:#dc3545;" onclick="rechazarIncidenciaTecnicoUI('${inc.ref}')">✕ Rechazar</button>` : ''}
-                        </div>
-
-                        <div class="acciones-tecnico-grupo">
-                            <div class="acciones-tecnico-titulo">Gestión y cierre</div>
-                            ${!finalizada ? `<button type="button" class="btn-accion-tecnico" style="background:#315f8c;" onclick="abrirModalCierreDirecto('${inc.ref}')">🔒 Cerrar incidencia</button>` : ''}
-                            ${!finalizada ? `<button type="button" class="btn-accion-tecnico" style="background:#6f42c1;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'OBSERVACION_TECNICA')">💬 Comentarios</button>` : `<button type="button" class="btn-accion-tecnico" style="background:#6f42c1;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'COMENTARIO_FINAL_TECNICO')">💬 Comentario final</button>`}
-                            ${botonInforme ? botonInforme.replaceAll('btn-accion-tabla','btn-accion-tecnico').replaceAll('background:#2c3e50; color:white;','background:#607080; color:white;').replaceAll('margin-top:5px;','margin-top:5px;') : ''}
-                        </div>
-                    </div>
+                <td style="text-align:center;">
+                    <button class="btn-accion-tabla" style="background:#6c757d; color:white;" onclick="cambiarPrioridadTecnico('${inc.ref}', '${urgente ? 'NORMAL' : 'URGENTE'}')">
+                        ${urgente ? 'Bajar Prioridad' : '⚡ Hacer Urgente'}
+                    </button>
+                    ${!finalizada ? (String(inc.asignadoA || '').trim().toUpperCase() === 'BRIGADA'
+                        ? '<div style="margin-top:6px; font-size:12px; font-weight:bold; color:#198754;">🛠️ ASIGNADA A BRIGADA</div>'
+                        : `<button class="btn-accion-tabla" style="background:#198754; color:white; margin-top:6px;" onclick="asignarIncidenciaABrigada('${inc.ref}')">🛠️ Brigada</button>`) : ''}
+                    ${!finalizada && inc.estado !== 'Rechazada por técnico' ? `<button class="btn-accion-tabla btn-acc-rechazar" style="margin-top:6px;" onclick="rechazarIncidenciaTecnicoUI('${inc.ref}')">✕ Rechazar</button>` : ''}
+                    ${botonInforme}
                 </td>
             `;
             tbody.appendChild(tr);
@@ -3063,35 +3123,35 @@ async function cargarPanelVisitas() {
 
         contenedor.innerHTML = lista.map((s) => {
             const tipo = s.tipoSolicitud || s.tipo || 'INSPECCIÓN';
-            const motivo = s.motivo || s.motivoVisita || 'Sin motivo indicado.';
+            const motivo = s.motivo || 'Sin motivo indicado.';
             const entidad = s.entidad || s.solicitante || 'Entidad no indicada';
-            const fecha = formatearFechaVisible(s.fechaSolicitud || s.fecha);
+            const fecha = formatearFechaVisible(s.fechaSolicitud);
             const ref = s.ref || '';
             const refJs = String(ref).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-            const esc = escaparHTMLSIMUN;
-            const prioridad = String(s.prioridad || 'NORMAL').toUpperCase();
-            const estadoInc = s.estadoIncidencia || '—';
+
             return `
                 <div class="visita-card">
                     <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
-                        <div><strong style="font-size:16px; color:#343a40;">${esc(ref || 'Sin referencia')}</strong><div style="margin-top:4px;"><span class="badge badge-visita">${esc(tipo)}</span></div></div>
-                        <div style="font-size:12px; color:#6c757d;"><strong>Solicitud:</strong> ${esc(fecha)}</div>
+                        <div>
+                            <strong style="font-size:15px; color:#343a40;">${ref || 'Sin referencia'}</strong>
+                            <div style="margin-top:4px;"><span class="badge badge-visita">${tipo}</span></div>
+                        </div>
+                        <div style="font-size:12px; color:#6c757d;"><strong>Solicitud:</strong> ${fecha}</div>
                     </div>
                     <div class="visita-grid">
-                        <div class="visita-dato"><strong>Entidad / centro</strong>${esc(entidad)}</div>
-                        <div class="visita-dato"><strong>Oficio</strong>${esc(s.oficio || 'No indicado')}</div>
-                        <div class="visita-dato"><strong>Trabajo</strong>${esc(s.trabajo || 'No indicado')}</div>
-                        <div class="visita-dato"><strong>Prioridad</strong>${esc(prioridad)}</div>
-                        <div class="visita-dato"><strong>Estado de la incidencia</strong>${esc(estadoInc)}</div>
-                        <div class="visita-dato"><strong>ID inspección</strong>${esc(s.idInspeccion || s.id || '—')}</div>
+                        <div class="visita-dato"><strong>Entidad / centro</strong>${entidad}</div>
+                        <div class="visita-dato"><strong>Oficio</strong>${s.oficio || 'No indicado'}</div>
+                        <div class="visita-dato"><strong>Estado</strong>${s.estado || 'PENDIENTE'}</div>
+                        <div class="visita-dato"><strong>ID inspección</strong>${s.idInspeccion || '—'}</div>
                     </div>
-                    <div style="margin-top:10px; padding:10px; background:#fff8f8; border:1px solid #f0d8dc; border-radius:5px; font-size:12px; line-height:1.5;"><strong>🔎 Motivo de la visita / valoración:</strong><br>${esc(motivo)}</div>
-                    <div style="margin-top:8px; padding:10px; background:#f8f9fa; border:1px solid #dee2e6; border-radius:5px; font-size:12px; line-height:1.5;"><strong>📝 Observaciones del centro:</strong><br>${esc(s.observacionesCentro || 'Sin observaciones.')}${s.observacionesAdicionales ? `<br><br><strong>Observaciones adicionales:</strong><br>${esc(s.observacionesAdicionales)}` : ''}</div>
-                    <div style="margin-top:8px; padding:10px; background:#eef6ff; border:1px solid #cfe2ff; border-radius:5px; font-size:12px; line-height:1.5;"><strong>🔄 Registro previo:</strong> ${esc(s.notificadaAntes || 'No indicado')}${s.fechaNotificacionAnterior ? `<br><strong>Fecha anterior:</strong> ${esc(formatearFechaVisible(s.fechaNotificacionAnterior))}` : ''}${s.refAnterior ? `<br><strong>Referencia anterior:</strong> ${esc(s.refAnterior)}` : ''}${s.observacionTecnica ? `<br><br><strong>Observación técnica existente:</strong><br>${esc(s.observacionTecnica)}` : ''}</div>
+                    <div style="margin-top:10px; padding:10px; background:#fff8f8; border:1px solid #f0d8dc; border-radius:5px; font-size:12px; line-height:1.5;">
+                        <strong>Motivo de la visita / valoración:</strong><br>${motivo}
+                    </div>
                     <div class="visita-acciones">
-                        <button type="button" class="btn-panel-nav btn-panel-visitas" onclick="registrarResultadoInspeccionPanel('${refJs}')">📝 Registrar resultado</button>
-                        <button type="button" class="btn-panel-nav" style="background:#dc3545; color:white;" onclick="rechazarSolicitudInspeccionUI('${refJs}')">✕ Rechazar visita</button>
-                        <button type="button" class="btn-panel-nav" style="background:#fd7e14; color:white;" onclick="marcarSolicitudRepetidaUI('${refJs}')">♻️ Marcar como repetida</button>
+                        <button type="button" class="btn-panel-nav btn-panel-visitas"
+                                onclick="abrirResultadoVisita('${refJs}')">
+                            📝 Registrar resultado
+                        </button>
                     </div>
                 </div>`;
         }).join('');
@@ -3128,30 +3188,6 @@ async function guardarResultadoVisita(resultado) {
         alert('Valoración y resolución registradas.');
     } catch(err) { alert('❌ Error de conexión al registrar la visita.'); }
 }
-
-async function rechazarSolicitudInspeccionUI(ref){
-    const motivo = prompt('Indique obligatoriamente el motivo por el que se rechaza la solicitud de visita / valoración técnica:', '');
-    if (!motivo || !motivo.trim()) return;
-    if (!confirm('¿Confirmar el rechazo de la solicitud de visita de ' + ref + '?')) return;
-    try {
-        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT,{action:'rechazarSolicitudInspeccion',ref:ref,motivo:motivo.trim(),tokenSesion:usuarioActual.tokenSesion},20000);
-        if(r && r.status==='SUCCESS'){alert('✅ Solicitud de visita rechazada y registrada en el histórico.');await cargarPanelVisitas();await cargarTablaTecnicoDesdeSheet();}
-        else alert('❌ '+((r&&r.message)||'No se pudo rechazar la solicitud.'));
-    }catch(err){alert('❌ Error de conexión al rechazar la solicitud.');}
-}
-
-async function marcarSolicitudRepetidaUI(ref){
-    const refRepetida=prompt('Indique la REF de la incidencia original que demuestra que esta solicitud es repetida:','');
-    if(!refRepetida||!refRepetida.trim())return;
-    const motivo=prompt('Indique el motivo o aclaración (opcional):','Solicitud repetida de '+refRepetida.trim())||'';
-    if(!confirm('¿Marcar '+ref+' como REPETIDA de '+refRepetida.trim()+'?\n\nLa incidencia actual quedará cerrada. La incidencia original no se modificará.'))return;
-    try{
-        const r=await ejecutarJSONP(URL_GOOGLE_SCRIPT,{action:'marcarSolicitudInspeccionRepetida',ref:ref,refRepetida:refRepetida.trim(),motivo:motivo.trim(),tokenSesion:usuarioActual.tokenSesion},20000);
-        if(r&&r.status==='SUCCESS'){alert('✅ Solicitud marcada como repetida. La incidencia original se conserva sin cambios.');await cargarPanelVisitas();await cargarTablaTecnicoDesdeSheet();}
-        else alert('❌ '+((r&&r.message)||'No se pudo marcar como repetida.'));
-    }catch(err){alert('❌ Error de conexión al marcar la solicitud como repetida.');}
-}
-
 
 async function registrarResultadoInspeccionPanel(ref) {
     const opcion = prompt(
@@ -3649,39 +3685,6 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
             await cambiarEstadoIncidenciaSheet(ref, 'Completada', obs, '');
         } else {
             await cambiarEstadoIncidenciaSheet(ref, 'Completada', '', obs);
-        }
-    }
-
-    function abrirModalCierreDirecto(ref) {
-        document.getElementById('modal-cierre-directo-ref').value = ref;
-        document.getElementById('modal-cierre-directo-motivo').value = '';
-        document.getElementById('modal-cierre-directo').classList.remove('oculto');
-        setTimeout(() => document.getElementById('modal-cierre-directo-motivo').focus(), 50);
-    }
-
-    function cerrarModalCierreDirecto() {
-        document.getElementById('modal-cierre-directo').classList.add('oculto');
-    }
-
-    async function confirmarCierreDirecto() {
-        const ref = document.getElementById('modal-cierre-directo-ref').value;
-        const motivo = document.getElementById('modal-cierre-directo-motivo').value.trim();
-        if (!motivo) {
-            alert('Debe indicar el motivo o la actuación realizada para cerrar la incidencia.');
-            document.getElementById('modal-cierre-directo-motivo').focus();
-            return;
-        }
-        if (!confirm('La incidencia ' + ref + ' pasará a estado CERRADA y dejará de aparecer entre los trabajos activos.\n\n¿Confirmar el cierre directo?')) return;
-        const boton = document.querySelector('#modal-cierre-directo button[onclick="confirmarCierreDirecto()"]');
-        if (boton) boton.disabled = true;
-        try {
-            const r = await cambiarEstadoIncidenciaSheet(ref, 'Cerrada', motivo, '');
-            if (r && r.status === 'SUCCESS') {
-                cerrarModalCierreDirecto();
-                alert('✅ Incidencia ' + ref + ' cerrada correctamente.');
-            }
-        } finally {
-            if (boton) boton.disabled = false;
         }
     }
 
