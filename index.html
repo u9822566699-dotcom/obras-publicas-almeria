@@ -716,7 +716,7 @@
             <div id="kpi-pendientes" style="font-size:18px; font-weight:bold; color:#856404;">0</div>
         </div>
         <div style="background:#e8f5e9; border-left:4px solid #28a745; padding:7px 8px; border-radius:4px; text-align:center;">
-            <span style="font-size:10px; color:#155724; font-weight:bold;">COMPLETADAS</span>
+            <span style="font-size:10px; color:#155724; font-weight:bold;">FINALIZADAS / CERRADAS</span>
             <div id="kpi-completadas" style="font-size:18px; font-weight:bold; color:#155724;">0</div>
         </div>
     </div>
@@ -2615,7 +2615,7 @@
     function actualizarKpis(datos) {
         document.getElementById('kpi-total').textContent = datos.length;
         document.getElementById('kpi-pendientes').textContent = datos.filter(i => ['Pendiente','Aceptada por la empresa','Inicio','Pendiente de revisión técnica','Pendiente de visita técnica'].includes(i.estado)).length;
-        document.getElementById('kpi-completadas').textContent = datos.filter(i => i.estado === 'Cerrada').length;
+        document.getElementById('kpi-completadas').textContent = datos.filter(i => ['Cerrada', 'Completada', 'Finalizada'].includes(String(i.estado || '').trim())).length;
     }
 
     function normalizarFechaOrden(valor) {
@@ -2893,6 +2893,7 @@
                             <div class="acciones-tecnico-titulo">Gestión y cierre</div>
                             ${!finalizada ? `<button type="button" class="btn-accion-tecnico" style="background:#315f8c;" onclick="abrirModalCierreDirecto('${inc.ref}')">🔒 Cerrar incidencia</button>` : ''}
                             ${!finalizada ? `<button type="button" class="btn-accion-tecnico" style="background:#6f42c1;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'OBSERVACION_TECNICA')">💬 Comentarios</button>` : `<button type="button" class="btn-accion-tecnico" style="background:#6f42c1;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'COMENTARIO_FINAL_TECNICO')">💬 Comentario final</button>`}
+                            ${['ADMIN','TECNICO'].includes(String(usuarioActual.rol || '').trim().toUpperCase()) && ['cerrada','completada','finalizada'].includes(String(inc.estado || '').trim().toLocaleLowerCase('es')) ? `<button type="button" class="btn-accion-tecnico" style="background:#b45309; margin-top:5px;" onclick="corregirCierreYReabrirIncidencia('${inc.ref}')">↩️ Corregir cierre y devolver a incidencias</button>` : ''}
                             ${botonInforme ? botonInforme.replaceAll('btn-accion-tabla','btn-accion-tecnico').replaceAll('background:#2c3e50; color:white;','background:#607080; color:white;').replaceAll('margin-top:5px;','margin-top:5px;') : ''}
                         </div>
                     </div>
@@ -3208,6 +3209,36 @@ async function registrarResultadoInspeccionPanel(ref) {
             await cargarTablaTecnicoDesdeSheet();
         } else alert('❌ ' + ((r && r.message) || 'No se pudo registrar la decisión.'));
     } catch (err) { alert('❌ Error de conexión al registrar la decisión.'); }
+}
+
+async function corregirCierreYReabrirIncidencia(ref) {
+    if (!['ADMIN','TECNICO'].includes(String(usuarioActual.rol || '').trim().toUpperCase())) {
+        alert('Solo un técnico o administrador puede corregir un cierre.');
+        return;
+    }
+    const comentario = prompt('Indique obligatoriamente el motivo de la corrección del cierre y la devolución al panel de incidencias:', '');
+    if (comentario === null || !comentario.trim()) {
+        alert('Debe indicar el motivo de la corrección.');
+        return;
+    }
+    if (!confirm('¿Corregir el cierre de ' + ref + ' y devolver la incidencia al panel general en estado Pendiente?\n\nSe conservarán el histórico de visitas y el registro de la corrección.')) return;
+    try {
+        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+            action: 'corregirCierreIncidencia',
+            ref: ref,
+            comentario: comentario.trim(),
+            tokenSesion: usuarioActual.tokenSesion
+        }, 20000);
+        if (r && r.status === 'SUCCESS') {
+            alert('✅ Cierre corregido. La incidencia vuelve al panel general en estado Pendiente.');
+            await cargarTablaTecnicoDesdeSheet();
+            await cargarPanelVisitas();
+        } else {
+            alert('❌ ' + ((r && r.message) || 'No se pudo corregir el cierre.'));
+        }
+    } catch (err) {
+        alert('❌ Error de conexión al corregir el cierre.');
+    }
 }
 
 async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
