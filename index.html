@@ -915,15 +915,12 @@
 <!-- MODAL PARA COMPLETAR INCIDENCIA -->
 <div id="visita-resultado-modal" class="modal-overlay oculto" style="z-index:10005;">
     <div class="modal-box" style="max-width:650px;">
-        <h3>Valoración de visita técnica</h3>
+        <h3>Resolución de visita técnica</h3>
         <input type="hidden" id="visita-resultado-ref">
-        <div class="form-group"><label for="visita-valoracion">Valoración de la visita y de la incidencia *</label><textarea id="visita-valoracion" style="min-height:110px;" placeholder="Describa lo observado durante la visita..."></textarea></div>
-        <div class="form-group"><label for="visita-solucion">Solución propuesta *</label><textarea id="visita-solucion" style="min-height:100px;" placeholder="Indique la solución propuesta..."></textarea></div>
-        <p style="font-size:13px;">Tras redactar ambos textos, seleccione la resolución:</p>
+        <p style="font-size:13px;line-height:1.5;">Seleccione una de las dos resoluciones. La aplicación solicitará el oficio de destino cuando corresponda y exigirá un comentario antes de guardar.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="btn-accion-tabla" style="background:#dc3545;color:white;flex:1;" onclick="guardarResultadoVisita('URGENTE')">🚨 Urgente</button>
-            <button type="button" class="btn-accion-tabla" style="background:#e0a800;color:#222;flex:1;" onclick="guardarResultadoVisita('PENDIENTE')">⏳ Pendiente</button>
-            <button type="button" class="btn-accion-tabla" style="background:#198754;color:white;flex:1;" onclick="guardarResultadoVisita('COMPLETADA')">✓ Completada</button>
+            <button type="button" class="btn-accion-tabla" style="background:#0d6efd;color:white;flex:1;" onclick="guardarResultadoVisita('TRASLADO_OFICIO')">↪ Dar traslado al oficio correspondiente</button>
+            <button type="button" class="btn-accion-tabla" style="background:#198754;color:white;flex:1;" onclick="guardarResultadoVisita('CIERRE_DIRECTO')">✓ Cerrar y finalizar directamente</button>
         </div>
         <button type="button" class="btn-volver" style="margin-top:15px;" onclick="cerrarResultadoVisita()">Cancelar</button>
     </div>
@@ -3136,18 +3133,9 @@ function abrirResultadoVisita(ref) {
 function cerrarResultadoVisita() { document.getElementById('visita-resultado-modal').classList.add('oculto'); }
 async function guardarResultadoVisita(resultado) {
     const ref = document.getElementById('visita-resultado-ref').value;
-    const valoracion = document.getElementById('visita-valoracion').value.trim();
-    const solucion = document.getElementById('visita-solucion').value.trim();
-    if (!valoracion || !solucion) { alert('Debe redactar la valoración y la solución propuesta.'); return; }
-    if (!confirm('¿Registrar la valoración y declarar la incidencia ' + resultado.toLowerCase() + '?')) return;
-    try {
-        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {action:'registrarResultadoInspeccion',ref,resultado,valoracion,solucion,observacion:valoracion + '\nSolución propuesta: ' + solucion,tokenSesion:usuarioActual.tokenSesion},20000);
-        if (r.status !== 'SUCCESS') { alert('❌ ' + (r.message || 'No se pudo guardar.')); return; }
-        cerrarResultadoVisita();
-        await cargarPanelVisitas();
-        await cargarTablaTecnicoDesdeSheet();
-        alert('Valoración y resolución registradas.');
-    } catch(err) { alert('❌ Error de conexión al registrar la visita.'); }
+    if (!ref) { alert('No se ha identificado la incidencia.'); return; }
+    cerrarResultadoVisita();
+    return registrarResultadoInspeccionPanel(ref);
 }
 
 async function rechazarSolicitudInspeccionUI(ref){
@@ -3176,49 +3164,50 @@ async function marcarSolicitudRepetidaUI(ref){
 
 async function registrarResultadoInspeccionPanel(ref) {
     const opcion = prompt(
-        'Resultado de la visita / valoración técnica:\n\n' +
-        '1 = No requiere actuación\n' +
-        '2 = Requiere una especialidad\n' +
-        '3 = Requiere varias especialidades\n' +
-        '4 = Actuación inmediata / urgente',
+        'Resolución de la visita / valoración técnica:\n\n' +
+        '1 = Dar traslado al oficio correspondiente\n' +
+        '2 = Cerrar y finalizar directamente',
         '1'
     );
-    if (!opcion) return;
-
-    const mapa = {
-        '1':'NO_ACCION',
-        '2':'UNA_ESPECIALIDAD',
-        '3':'VARIAS_ESPECIALIDADES',
-        '4':'URGENTE'
-    };
+    if (opcion === null || !String(opcion).trim()) return;
+    const mapa = {'1':'TRASLADO_OFICIO', '2':'CIERRE_DIRECTO'};
     const resultado = mapa[String(opcion).trim()];
-    if (!resultado) { alert('Seleccione 1, 2, 3 o 4.'); return; }
+    if (!resultado) { alert('Seleccione 1 o 2.'); return; }
 
-    const observacion = prompt('Observaciones de la visita / valoración (opcional):', '') || '';
-    const oficios = (resultado === 'UNA_ESPECIALIDAD' || resultado === 'VARIAS_ESPECIALIDADES' || resultado === 'URGENTE')
-        ? (prompt('Oficio(s) requerido(s), separados por comas:', '') || '')
-        : '';
+    let oficios = '';
+    if (resultado === 'TRASLADO_OFICIO') {
+        oficios = (prompt('Indique el oficio al que debe trasladarse la incidencia:', '') || '').trim();
+        if (!oficios) { alert('Debe indicar el oficio de destino para realizar el traslado.'); return; }
+    }
+    const observacion = prompt(
+        resultado === 'TRASLADO_OFICIO'
+          ? 'Explique obligatoriamente la valoración y el motivo del traslado:'
+          : 'Explique obligatoriamente la valoración y el motivo del cierre:',
+        ''
+    );
+    if (observacion === null || !observacion.trim()) {
+        alert('Debe introducir un comentario para registrar la decisión.');
+        return;
+    }
+    const confirmacion = resultado === 'TRASLADO_OFICIO'
+        ? '¿Registrar el traslado de ' + ref + ' al oficio «' + oficios + '»?'
+        : '¿Cerrar y finalizar directamente la incidencia ' + ref + '?';
+    if (!confirm(confirmacion + '\n\nLa decisión y el comentario quedarán guardados en el histórico.')) return;
 
     try {
         const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-            action:'registrarResultadoInspeccion',
-            ref:ref,
-            resultado:resultado,
-            oficiosRequeridos:oficios.trim(),
-            observacion:observacion.trim(),
+            action:'registrarResultadoInspeccion', ref:ref, resultado:resultado,
+            oficiosRequeridos:oficios, observacion:observacion.trim(),
             tokenSesion:usuarioActual.tokenSesion
         }, 20000);
-
         if (r && r.status === 'SUCCESS') {
-            alert('✅ Resultado de la visita / valoración registrado.');
+            alert(resultado === 'TRASLADO_OFICIO'
+                ? '✅ Traslado registrado. La incidencia vuelve a Pendiente en el oficio de destino.'
+                : '✅ Incidencia cerrada y finalizada.');
             await cargarPanelVisitas();
             await cargarTablaTecnicoDesdeSheet();
-        } else {
-            alert('❌ ' + ((r && r.message) || 'No se pudo registrar el resultado.'));
-        }
-    } catch (err) {
-        alert('❌ Error de conexión al registrar el resultado.');
-    }
+        } else alert('❌ ' + ((r && r.message) || 'No se pudo registrar la decisión.'));
+    } catch (err) { alert('❌ Error de conexión al registrar la decisión.'); }
 }
 
 async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
@@ -3244,40 +3233,11 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
     }
 
     async function registrarResultadoInspeccionUI(ref){
-        const opcion = prompt(
-            'Resultado de la valoración técnica:\n\n' +
-            '1 = No requiere actuación\n' +
-            '2 = Requiere una especialidad\n' +
-            '3 = Requiere varias especialidades\n' +
-            '4 = Actuación inmediata / urgente',
-            '1'
-        );
-        if (!opcion) return;
-        const mapa = { '1':'NO_ACCION', '2':'UNA_ESPECIALIDAD', '3':'VARIAS_ESPECIALIDADES', '4':'URGENTE' };
-        const resultado = mapa[String(opcion).trim()];
-        if (!resultado) { alert('Seleccione 1, 2, 3 o 4.'); return; }
-        const comentario = prompt('Observaciones de la valoración (opcional):', '') || '';
-        const oficios = (resultado === 'UNA_ESPECIALIDAD' || resultado === 'VARIAS_ESPECIALIDADES' || resultado === 'URGENTE')
-            ? (prompt('Oficio(s) requerido(s), separados por comas:', '') || '') : '';
-        try {
-            const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-                action: 'registrarResultadoInspeccion', ref: ref, resultado: resultado,
-                oficiosRequeridos: oficios.trim(), observacion: comentario.trim(),
-                tokenSesion: usuarioActual.tokenSesion
-            }, 20000);
-            if (r.status === 'SUCCESS') { alert('✅ Resultado de inspección registrado.'); await cargarTablaTecnicoDesdeSheet(); }
-            else alert('❌ ' + (r.message || 'No se pudo registrar el resultado.'));
-        } catch (err) { alert('❌ Error de conexión al registrar el resultado.'); }
+        return registrarResultadoInspeccionPanel(ref);
     }
 
     async function valorarIncidenciaTecnicaUI(ref){
-        const accion=confirm('¿La incidencia está solucionada?\n\nAceptar = SOLUCIONADA\nCancelar = NO SOLUCIONADA') ? 'SOLUCIONADA' : 'NO';
-        const comentario=prompt(accion==='SOLUCIONADA'?'Observación del técnico (opcional):':'Indique qué queda pendiente (recomendado):','');
-        if(accion==='NO' && comentario===null) return;
-        try{
-            const r=await ejecutarJSONP(URL_GOOGLE_SCRIPT,{action:'registrarResultadoInspeccion',ref:ref,accion:accion,comentario:(comentario||'').trim(),tokenSesion:usuarioActual.tokenSesion},20000);
-            if(r.status==='SUCCESS') await cargarTablaTecnicoDesdeSheet(); else alert('❌ '+(r.message||'No se pudo registrar la valoración.'));
-        }catch(err){alert('❌ Error de conexión al registrar la valoración.');}
+        return registrarResultadoInspeccionPanel(ref);
     }
 
     function prepararInformePdf(indexEnMemoria) {
