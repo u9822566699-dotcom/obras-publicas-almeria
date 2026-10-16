@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- SIMUN V19.01 - RECHAZO Y VALORACION DE VISITAS -->
+<!-- SIMUN V20 - NUEVO FLUJO DE RESULTADO DE VISITAS -->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMUN V19 - Sistema de Incidencias Municipales</title>
+    <title>SIMUN V20 - Sistema de Incidencias Municipales</title>
     
     <!-- Librería para exportación de PDF dinámico si se requiere -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -912,17 +912,32 @@
     </div>
 </div>
 
-<!-- MODAL PARA COMPLETAR INCIDENCIA -->
+<!-- SIMUN V20: MODAL PARA REGISTRAR EL RESULTADO DE UNA VISITA -->
 <div id="visita-resultado-modal" class="modal-overlay oculto" style="z-index:10005;">
     <div class="modal-box" style="max-width:650px;">
-        <h3>Resolución de visita técnica</h3>
+        <h3>Registrar resultado de la visita técnica</h3>
         <input type="hidden" id="visita-resultado-ref">
-        <p style="font-size:13px;line-height:1.5;">Seleccione una de las dos resoluciones. La aplicación solicitará el oficio de destino cuando corresponda y exigirá un comentario antes de guardar.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="btn-accion-tabla" style="background:#0d6efd;color:white;flex:1;" onclick="guardarResultadoVisita('TRASLADO_OFICIO')">↪ Dar traslado al oficio correspondiente</button>
-            <button type="button" class="btn-accion-tabla" style="background:#198754;color:white;flex:1;" onclick="guardarResultadoVisita('CIERRE_DIRECTO')">✓ Cerrar y finalizar directamente</button>
+        <p style="font-size:13px;line-height:1.5;">Seleccione cómo debe continuar la incidencia después de la visita.</p>
+        <div class="form-group" style="margin-bottom:12px;">
+            <label for="visita-resultado-opcion">Resultado *</label>
+            <select id="visita-resultado-opcion" class="form-control" onchange="actualizarCamposResultadoVisita()" style="width:100%;padding:10px;border:1px solid #ced4da;border-radius:6px;">
+                <option value="MISMO_OFICIO">1. Devolver al listado del mismo oficio</option>
+                <option value="TRASLADO_OFICIO">2. Pasar al listado de otro oficio</option>
+                <option value="CIERRE_DIRECTO">3. Cerrar y finalizar (visita de inspección)</option>
+            </select>
         </div>
-        <button type="button" class="btn-volver" style="margin-top:15px;" onclick="cerrarResultadoVisita()">Cancelar</button>
+        <div id="visita-resultado-destino-wrap" class="form-group" style="display:none;margin-bottom:12px;">
+            <label for="visita-resultado-oficio">Nuevo oficio *</label>
+            <select id="visita-resultado-oficio" style="width:100%;padding:10px;border:1px solid #ced4da;border-radius:6px;"></select>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+            <label for="visita-resultado-comentario">Comentario para el historial *</label>
+            <textarea id="visita-resultado-comentario" style="width:100%;min-height:75px;padding:10px;border:1px solid #ced4da;border-radius:6px;" placeholder="Anote brevemente el resultado de la visita..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn-volver" style="margin:0;" onclick="cerrarResultadoVisita()">Cancelar</button>
+            <button type="button" class="btn-accion-tabla" style="background:#6f42c1;color:white;" onclick="guardarResultadoVisitaV20()">Confirmar resultado</button>
+        </div>
     </div>
 </div>
 <div id="modal-cierre-directo" class="modal-overlay oculto" style="z-index:10002;">
@@ -3127,16 +3142,83 @@ function escaparHTMLSIMUN(texto) {
 
 function abrirResultadoVisita(ref) {
     document.getElementById('visita-resultado-ref').value = ref;
-    document.getElementById('visita-valoracion').value = '';
-    document.getElementById('visita-solucion').value = '';
+    document.getElementById('visita-resultado-opcion').value = 'MISMO_OFICIO';
+    document.getElementById('visita-resultado-comentario').value = '';
+    const selOficio = document.getElementById('visita-resultado-oficio');
+    selOficio.innerHTML = '<option value="">-- Seleccione el nuevo oficio --</option>';
+    Object.keys(tiposPorOficio).forEach(function(oficio) {
+        const option = document.createElement('option');
+        option.value = oficio;
+        option.textContent = oficio;
+        selOficio.appendChild(option);
+    });
+    actualizarCamposResultadoVisita();
     document.getElementById('visita-resultado-modal').classList.remove('oculto');
 }
-function cerrarResultadoVisita() { document.getElementById('visita-resultado-modal').classList.add('oculto'); }
-async function guardarResultadoVisita(resultado) {
+function cerrarResultadoVisita() {
+    document.getElementById('visita-resultado-modal').classList.add('oculto');
+}
+function actualizarCamposResultadoVisita() {
+    const opcion = document.getElementById('visita-resultado-opcion').value;
+    const wrap = document.getElementById('visita-resultado-destino-wrap');
+    const comentario = document.getElementById('visita-resultado-comentario');
+    if (wrap) wrap.style.display = opcion === 'TRASLADO_OFICIO' ? 'block' : 'none';
+    if (comentario) comentario.placeholder = opcion === 'CIERRE_DIRECTO'
+        ? 'Comentario breve que quedará registrado en el historial...'
+        : 'Anote brevemente el resultado de la visita...';
+}
+async function guardarResultadoVisitaV20() {
     const ref = document.getElementById('visita-resultado-ref').value;
+    const resultado = document.getElementById('visita-resultado-opcion').value;
+    const comentario = document.getElementById('visita-resultado-comentario').value.trim();
+    const selOficio = document.getElementById('visita-resultado-oficio');
+    let oficioDestino = '';
     if (!ref) { alert('No se ha identificado la incidencia.'); return; }
+    if (!comentario) { alert('Introduzca un comentario para el historial.'); document.getElementById('visita-resultado-comentario').focus(); return; }
+    if (resultado === 'TRASLADO_OFICIO') {
+        oficioDestino = selOficio.value;
+        if (!oficioDestino) { alert('Seleccione el nuevo oficio de destino.'); selOficio.focus(); return; }
+    }
+    const mensajeConfirmacion = resultado === 'CIERRE_DIRECTO'
+        ? 'La incidencia ' + ref + ' se cerrará y finalizará como visita de inspección. El comentario quedará en el historial.\n\n¿Confirmar el cierre?'
+        : (resultado === 'TRASLADO_OFICIO'
+            ? 'La incidencia ' + ref + ' pasará al listado del oficio «' + oficioDestino + '».\n\n¿Confirmar el traslado?'
+            : 'La incidencia ' + ref + ' volverá al listado del mismo oficio.\n\n¿Confirmar el resultado?');
+    // Opción 3: el comentario sirve como confirmación; no se muestra una segunda pregunta.
+    if (resultado !== 'CIERRE_DIRECTO' && !confirm(mensajeConfirmacion)) return;
     cerrarResultadoVisita();
-    return registrarResultadoInspeccionPanel(ref);
+    try {
+        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+            action: 'registrarResultadoInspeccion',
+            ref: ref,
+            resultado: resultado,
+            oficiosRequeridos: oficioDestino,
+            observacion: comentario,
+            tokenSesion: usuarioActual.tokenSesion
+        }, 20000);
+        if (r && r.status === 'SUCCESS') {
+            alert(resultado === 'CIERRE_DIRECTO'
+                ? '✅ Incidencia cerrada y finalizada. El comentario se ha guardado en el historial.'
+                : (resultado === 'TRASLADO_OFICIO'
+                    ? '✅ Incidencia trasladada al oficio seleccionado.'
+                    : '✅ Incidencia devuelta al listado de su oficio original.'));
+            await cargarPanelVisitas();
+            await cargarTablaTecnicoDesdeSheet();
+        } else {
+            alert('❌ ' + ((r && r.message) || 'No se pudo registrar el resultado.'));
+            document.getElementById('visita-resultado-ref').value = ref;
+            document.getElementById('visita-resultado-opcion').value = resultado;
+            document.getElementById('visita-resultado-comentario').value = comentario;
+            if (oficioDestino) selOficio.value = oficioDestino;
+            actualizarCamposResultadoVisita();
+            document.getElementById('visita-resultado-modal').classList.remove('oculto');
+        }
+    } catch (err) {
+        alert('❌ Error de conexión al registrar el resultado.');
+    }
+}
+async function registrarResultadoInspeccionPanel(ref) {
+    abrirResultadoVisita(ref);
 }
 
 async function rechazarSolicitudInspeccionUI(ref){
@@ -3162,54 +3244,6 @@ async function marcarSolicitudRepetidaUI(ref){
     }catch(err){alert('❌ Error de conexión al marcar la solicitud como repetida.');}
 }
 
-
-async function registrarResultadoInspeccionPanel(ref) {
-    const opcion = prompt(
-        'Resolución de la visita / valoración técnica:\n\n' +
-        '1 = Dar traslado al oficio correspondiente\n' +
-        '2 = Cerrar y finalizar directamente',
-        '1'
-    );
-    if (opcion === null || !String(opcion).trim()) return;
-    const mapa = {'1':'TRASLADO_OFICIO', '2':'CIERRE_DIRECTO'};
-    const resultado = mapa[String(opcion).trim()];
-    if (!resultado) { alert('Seleccione 1 o 2.'); return; }
-
-    let oficios = '';
-    if (resultado === 'TRASLADO_OFICIO') {
-        oficios = (prompt('Indique el oficio al que debe trasladarse la incidencia:', '') || '').trim();
-        if (!oficios) { alert('Debe indicar el oficio de destino para realizar el traslado.'); return; }
-    }
-    const observacion = prompt(
-        resultado === 'TRASLADO_OFICIO'
-          ? 'Explique obligatoriamente la valoración y el motivo del traslado:'
-          : 'Explique obligatoriamente la valoración y el motivo del cierre:',
-        ''
-    );
-    if (observacion === null || !observacion.trim()) {
-        alert('Debe introducir un comentario para registrar la decisión.');
-        return;
-    }
-    const confirmacion = resultado === 'TRASLADO_OFICIO'
-        ? '¿Registrar el traslado de ' + ref + ' al oficio «' + oficios + '»?'
-        : '¿Cerrar y finalizar directamente la incidencia ' + ref + '?';
-    if (!confirm(confirmacion + '\n\nLa decisión y el comentario quedarán guardados en el histórico.')) return;
-
-    try {
-        const r = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
-            action:'registrarResultadoInspeccion', ref:ref, resultado:resultado,
-            oficiosRequeridos:oficios, observacion:observacion.trim(),
-            tokenSesion:usuarioActual.tokenSesion
-        }, 20000);
-        if (r && r.status === 'SUCCESS') {
-            alert(resultado === 'TRASLADO_OFICIO'
-                ? '✅ Traslado registrado. La incidencia vuelve a Pendiente en el oficio de destino.'
-                : '✅ Incidencia cerrada y finalizada.');
-            await cargarPanelVisitas();
-            await cargarTablaTecnicoDesdeSheet();
-        } else alert('❌ ' + ((r && r.message) || 'No se pudo registrar la decisión.'));
-    } catch (err) { alert('❌ Error de conexión al registrar la decisión.'); }
-}
 
 async function corregirCierreYReabrirIncidencia(ref) {
     if (!['ADMIN','TECNICO'].includes(String(usuarioActual.rol || '').trim().toUpperCase())) {
