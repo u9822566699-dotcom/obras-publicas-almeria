@@ -585,8 +585,8 @@
 
     <div class="acciones-portada">
         <button type="button" class="btn-portada" onclick="seleccionarTipoEntidad('COLEGIO')">🏫 Colegios y centros educativos</button>
-        <button type="button" class="btn-portada" onclick="seleccionarTipoEntidad('ASOCIACION')">🏘️ Asociaciones Vecinales</button>
-        <button type="button" class="btn-portada" onclick="seleccionarTipoEntidad('MUNICIPAL')">🏛️ Edificios y dependencias municipales</button>
+        <button id="btn-portada-asociaciones" type="button" class="btn-portada" onclick="seleccionarTipoEntidad('ASOCIACION')">🏘️ Asociaciones Vecinales</button>
+        <button id="btn-portada-municipales" type="button" class="btn-portada" onclick="seleccionarTipoEntidad('MUNICIPAL')">🏛️ Edificios y dependencias municipales</button>
         <button type="button" class="btn-portada" onclick="mostrarLoginAutorizado()">🔐 PERFIL AUTORIZADO</button>
     </div>
 
@@ -1167,7 +1167,7 @@
 
         <div id="grupo-centro-autorizado" class="form-group" style="display:none;">
             <label for="centro-select-autorizado"><span id="label-centro-autorizado">Centro o colegio *</span></label>
-            <select id="centro-select-autorizado" onchange="actualizarCentro(); if (sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal) cargarHistorialEntidad();">
+            <select id="centro-select-autorizado" onchange="actualizarCentro(); if (sesionEntidad && (sesionEntidad.esPerfilAutorizadoMunicipal || esSesionColegiosGeneral())) cargarHistorialEntidad();">
                 <option value="">Seleccione primero el tipo de entidad...</option>
             </select>
         </div>
@@ -1378,6 +1378,40 @@
         }
     }
 
+    let colegiosGeneral = [];
+    let colegiosGeneralCargados = false;
+
+    async function cargarColegiosDesdeSheet() {
+        if (colegiosGeneralCargados && Array.isArray(colegiosGeneral)) {
+            return colegiosGeneral;
+        }
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarColegios'
+            }, 20000);
+            if (respuesta.status !== 'SUCCESS' || !Array.isArray(respuesta.data)) {
+                throw new Error(respuesta.message || 'No se pudieron cargar los colegios.');
+            }
+            colegiosGeneral = respuesta.data.map(function(item) {
+                return {
+                    Tipo: 'Colegio o centro educativo',
+                    Nombre: item.Nombre || item.nombre || '',
+                    'Dirección': item['Dirección'] || item.direccion || '',
+                    'Código postal': item['Código postal'] || item.cp || '',
+                    Localidad: item.Localidad || item.localidad || '',
+                    Municipio: item.Municipio || item.municipio || ''
+                };
+            }).filter(function(item) { return item.Nombre; });
+            colegiosGeneralCargados = true;
+            return colegiosGeneral;
+        } catch (err) {
+            colegiosGeneral = [];
+            colegiosGeneralCargados = false;
+            console.error('Error al cargar colegios para COLEGIOS_general:', err);
+            throw err;
+        }
+    }
+
     const tiposPorOficio = {
         "Albañilería": ["Fuentes", "Solados / Azulejos", "Tabiquería / Paramentos", "Arquetas", "OTROS"],
         "Carpintería de madera": ["Puertas", "Armarios / Mobiliario", "Cerraduras madera", "OTROS"],
@@ -1468,7 +1502,7 @@
 
             sesionEntidad = respuesta;
             const panelHistorialEntidad = document.getElementById('historial-entidad-panel');
-            if (panelHistorialEntidad) panelHistorialEntidad.style.display = (respuesta.rol === 'ENTIDAD' || respuesta.esPerfilAutorizadoMunicipal) ? 'block' : 'none';
+            if (panelHistorialEntidad) panelHistorialEntidad.style.display = (respuesta.rol === 'ENTIDAD' || respuesta.esPerfilAutorizadoMunicipal || respuesta.esPerfilColegiosGeneral) ? 'block' : 'none';
 
             if (respuesta.rol === 'AUTORIZADO') {
                 modoAccesoEntidad = 'AUTORIZADO';
@@ -1544,6 +1578,7 @@
     }
 
     function cerrarSesionEntidad() {
+        aplicarRestriccionesColegiosGeneral(false);
         sesionEntidad = null;
         modoAccesoEntidad = 'ENTIDAD';
         tipoEntidadActual = 'COLEGIO';
@@ -1557,6 +1592,9 @@
 
 
     function seleccionarTipoEntidad(tipo) {
+        if (esSesionColegiosGeneral() && tipo !== 'COLEGIO') {
+            tipo = 'COLEGIO';
+        }
         tipoEntidadActual = tipo;
         mostrarFormulario();
     }
@@ -1708,6 +1746,7 @@
 
     function mostrarPortada() {
         ocultarTodasLasVistas();
+        aplicarRestriccionesColegiosGeneral(esSesionColegiosGeneral());
         document.getElementById('vista-portada').classList.remove('oculto');
         window.scrollTo(0, 0);
     }
@@ -1756,17 +1795,76 @@
         }
     }
 
+    function esSesionColegiosGeneral() {
+        if (!sesionEntidad) return false;
+        if (sesionEntidad.esPerfilColegiosGeneral === true) return true;
+        const valores = [sesionEntidad.perfil, sesionEntidad.usuario, sesionEntidad.nombreUsuario,
+            sesionEntidad.tipoPerfil, sesionEntidad.rol, sesionEntidad.nombrePerfil];
+        return valores.some(function(v) {
+            return String(v || '').trim().toUpperCase().replace(/[\s-]+/g, '_') === 'COLEGIOS_GENERAL';
+        });
+    }
+
+    function aplicarRestriccionesColegiosGeneral(activo) {
+        const ocultar = !!activo;
+        const btnAsociaciones = document.getElementById('btn-portada-asociaciones');
+        const btnMunicipales = document.getElementById('btn-portada-municipales');
+        // Ocultar completamente los accesos de portada para este perfil.
+        [btnAsociaciones, btnMunicipales].forEach(function(btn) {
+            if (!btn) return;
+            btn.style.display = ocultar ? 'none' : '';
+            btn.disabled = ocultar;
+            btn.setAttribute('aria-hidden', ocultar ? 'true' : 'false');
+        });
+
+        // Ocultar el grupo entero y retirar del selector las opciones no permitidas.
+        const grupoFiltro = document.getElementById('grupo-filtro-autorizado');
+        const filtro = document.getElementById('filtro-tipo-autorizado');
+        if (filtro) {
+            if (ocultar) {
+                filtro.value = 'COLEGIO';
+                filtro.disabled = true;
+                Array.from(filtro.options).forEach(function(op) {
+                    if (op.value && op.value !== 'COLEGIO') op.remove();
+                });
+                if (grupoFiltro) grupoFiltro.style.display = 'none';
+                filtro.style.display = 'none';
+            } else {
+                filtro.disabled = false;
+                if (grupoFiltro) grupoFiltro.style.display = '';
+                filtro.style.display = '';
+                // Restaurar opciones solo cuando se abandona COLEGIOS_general.
+                if (!Array.from(filtro.options).some(op => op.value === 'ASOCIACION')) {
+                    filtro.add(new Option('🏘️ Asociaciones Vecinales', 'ASOCIACION'));
+                }
+                if (!Array.from(filtro.options).some(op => op.value === 'MUNICIPAL')) {
+                    filtro.add(new Option('🏛️ Edificios y dependencias municipales', 'MUNICIPAL'));
+                }
+            }
+        }
+        // Impedir que se elija otro tipo aunque se intente desde la interfaz.
+        if (ocultar) tipoEntidadActual = 'COLEGIO';
+    }
+
     function prepararFormularioAutorizado() {
         ocultarTodasLasVistas();
         resetearFormulario();
 
         const esMunicipal = !!(sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal);
+        const esColegiosGeneral = esSesionColegiosGeneral();
+        aplicarRestriccionesColegiosGeneral(esColegiosGeneral);
         const filtro = document.getElementById('grupo-filtro-autorizado');
         const grupoCentroNormal = document.getElementById('grupo-centro-normal');
         const grupoCentroAut = document.getElementById('grupo-centro-autorizado');
         const labelCentro = document.getElementById('label-centro-autorizado');
 
-        if (esMunicipal) {
+        if (esColegiosGeneral) {
+            tipoEntidadActual = 'COLEGIO';
+            if (filtro) filtro.style.display = 'none';
+            if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
+            if (grupoCentroAut) grupoCentroAut.style.display = 'block';
+            if (labelCentro) labelCentro.textContent = 'Colegio para consultar o registrar incidencias *';
+        } else if (esMunicipal) {
             tipoEntidadActual = 'MUNICIPAL';
             if (filtro) filtro.style.display = 'none';
             if (grupoCentroNormal) grupoCentroNormal.style.display = 'none';
@@ -1787,32 +1885,43 @@
         const areaTexto = esMunicipal && Array.isArray(sesionEntidad.areasAutorizadas)
             ? ' — Área: ' + sesionEntidad.areasAutorizadas.join(', ')
             : '';
-        document.getElementById('entidad-session-name').textContent =
-            'PERFIL AUTORIZADO — ' + (sesionEntidad.perfil || sesionEntidad.nombreUsuario || sesionEntidad.usuario || 'Usuario autorizado') + areaTexto;
+        document.getElementById('entidad-session-name').textContent = esColegiosGeneral
+            ? 'Origen: COLEGIOS_general — selección de cualquier colegio'
+            : 'PERFIL AUTORIZADO — ' + (sesionEntidad.perfil || sesionEntidad.nombreUsuario || sesionEntidad.usuario || 'Usuario autorizado') + areaTexto;
         document.getElementById('vista-formulario').style.display = 'block';
+        const panelHistorialColegios = document.getElementById('historial-entidad-panel');
+        if (panelHistorialColegios) panelHistorialColegios.style.display = (esMunicipal || esColegiosGeneral) ? 'block' : panelHistorialColegios.style.display;
         window.scrollTo(0, 0);
 
-        if (esMunicipal) {
+        if (esMunicipal || esColegiosGeneral) {
             actualizarSelectorAutorizado().then(() => {
                 const select = document.getElementById('centro-select-autorizado');
                 if (select) {
                     select.value = '';
-                    document.getElementById('historial-entidad-contenido').innerHTML = '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
+                    document.getElementById('historial-entidad-contenido').innerHTML = esColegiosGeneral
+                        ? '<div style="text-align:center; padding:18px; color:#777;">Seleccione un colegio para consultar su historial.</div>'
+                        : '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
                 }
             });
         }
     }
 
     async function actualizarSelectorAutorizado() {
-        const tipo = sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal
-            ? 'MUNICIPAL'
-            : document.getElementById('filtro-tipo-autorizado').value;
+        if (esSesionColegiosGeneral()) {
+            aplicarRestriccionesColegiosGeneral(true);
+            tipoEntidadActual = 'COLEGIO';
+        }
+        const tipo = esSesionColegiosGeneral()
+            ? 'COLEGIO'
+            : (sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal
+                ? 'MUNICIPAL'
+                : document.getElementById('filtro-tipo-autorizado').value);
         const select = document.getElementById('centro-select-autorizado');
         const label = document.getElementById('label-centro-autorizado');
         if (!select) return;
 
         tipoEntidadActual = tipo;
-        select.innerHTML = '<option value="">Seleccione el edificio / entidad...</option>';
+        select.innerHTML = '<option value="">Seleccione el colegio o entidad...</option>';
 
         let nombres = [];
         if (tipo === 'MUNICIPAL' && sesionEntidad && sesionEntidad.esPerfilAutorizadoMunicipal) {
@@ -1841,8 +1950,14 @@
             catch (err) { select.innerHTML = '<option value="">No se han podido cargar los edificios...</option>'; return; }
             nombres = edificiosMunicipales.map(item => item['Nombre']).filter(Boolean);
         } else if (tipo === 'COLEGIO') {
-            label.textContent = 'Centro o colegio *';
-            nombres = Object.keys(centrosEducativos);
+            label.textContent = 'Colegio o centro educativo *';
+            try {
+                await cargarColegiosDesdeSheet();
+            } catch (err) {
+                select.innerHTML = '<option value="">No se han podido cargar los colegios...</option>';
+                return;
+            }
+            nombres = colegiosGeneral.map(item => item.Nombre).filter(Boolean);
         }
 
         nombres.forEach(nombre => {
@@ -2535,13 +2650,16 @@
         const contenedor = document.getElementById('historial-entidad-contenido');
         if (!contenedor || !sesionEntidad) return;
         const esMunicipalAutorizado = sesionEntidad.rol === 'AUTORIZADO' && sesionEntidad.esPerfilAutorizadoMunicipal;
-        if (sesionEntidad.rol !== 'ENTIDAD' && !esMunicipalAutorizado) return;
+        const esColegiosGeneral = sesionEntidad.rol === 'AUTORIZADO' && esSesionColegiosGeneral();
+        if (sesionEntidad.rol !== 'ENTIDAD' && !esMunicipalAutorizado && !esColegiosGeneral) return;
 
-        const entidadHistorial = esMunicipalAutorizado
+        const entidadHistorial = (esMunicipalAutorizado || esColegiosGeneral)
             ? (document.getElementById('centro-select-autorizado')?.value || '')
             : '';
-        if (esMunicipalAutorizado && !entidadHistorial) {
-            contenedor.innerHTML = '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
+        if ((esMunicipalAutorizado || esColegiosGeneral) && !entidadHistorial) {
+            contenedor.innerHTML = esColegiosGeneral
+                ? '<div style="text-align:center; padding:18px; color:#777;">Seleccione un colegio para consultar su historial.</div>'
+                : '<div style="text-align:center; padding:18px; color:#777;">Seleccione un edificio para consultar su historial.</div>';
             return;
         }
 
