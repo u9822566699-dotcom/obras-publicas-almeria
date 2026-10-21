@@ -446,6 +446,15 @@
         .visita-dato strong { display:block; color:#495057; margin-bottom:2px; }
         .visita-acciones { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-top:12px; }
         .badge-visita { background:#6f42c1; color:#fff; }
+        @media print {
+            body { background:#fff !important; padding:0 !important; }
+            body * { visibility:hidden; }
+            #impresion-visitas-temporal, #impresion-visitas-temporal * { visibility:visible; }
+            #impresion-visitas-temporal { position:absolute; left:0; top:0; width:100%; padding:18px; color:#111; }
+            #impresion-visitas-temporal .visita-card { break-inside:avoid; margin:0 0 10px 0; box-shadow:none; }
+            #impresion-visitas-temporal .visita-acciones { display:none !important; }
+        }
+
         
 
         /* MODAL DE CIERRE */
@@ -825,6 +834,25 @@
         <button type="button" class="btn-panel-nav btn-panel-visitas" onclick="cargarPanelVisitas()">🔄 Actualizar visitas</button>
     </div>
 
+    <div class="visitas-filtros" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:7px;padding:14px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;align-items:end;">
+            <label style="font-size:12px;font-weight:bold;">Buscar en las solicitudes
+                <input id="filtro-visitas-texto" type="search" placeholder="Referencia, motivo, oficio..." oninput="filtrarPanelVisitas()" style="display:block;width:100%;padding:9px;border:1px solid #ced4da;border-radius:5px;margin-top:5px;">
+            </label>
+            <label style="font-size:12px;font-weight:bold;">Centro / entidad
+                <select id="filtro-visitas-centro" onchange="filtrarPanelVisitas()" style="display:block;width:100%;padding:9px;border:1px solid #ced4da;border-radius:5px;margin-top:5px;"><option value="">Todos los centros</option></select>
+            </label>
+            <label style="font-size:12px;font-weight:bold;">Estado de la incidencia
+                <select id="filtro-visitas-estado" onchange="filtrarPanelVisitas()" style="display:block;width:100%;padding:9px;border:1px solid #ced4da;border-radius:5px;margin-top:5px;"><option value="">Todos los estados</option></select>
+            </label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px;">
+            <button type="button" class="btn-panel-nav btn-panel-refresh" onclick="limpiarFiltrosPanelVisitas()">Limpiar filtros</button>
+            <button type="button" class="btn-imprimir-tecnico" onclick="imprimirPanelVisitas(false)">🖨️ Imprimir listado filtrado</button>
+            <button type="button" class="btn-imprimir-tecnico" onclick="imprimirPanelVisitas(true)">🖨️ Imprimir listado general pendiente</button>
+        </div>
+        <div id="contador-visitas-filtradas" style="font-size:12px;color:#555;margin-top:9px;"></div>
+    </div>
     <div id="lista-visitas-solicitadas"></div>
 </div>
 
@@ -3178,6 +3206,61 @@ async function actualizarContadorVisitas() {
     return null;
 }
 
+let solicitudesVisitasPanel = [];
+
+function estadoSolicitudVisita(s) {
+    return String(s.estadoSolicitud || s.estadoVisita || s.estadoInspeccion || s.estado || 'PENDIENTE').trim();
+}
+function solicitudVisitaFinalizada(s) {
+    const estados = [estadoSolicitudVisita(s), s.estadoIncidencia || ''].join(' ').toUpperCase();
+    return /FINALIZAD|COMPLETAD|CERRAD|RECHAZAD|ANULAD|RESUELT|CANCELAD/.test(estados) ||
+        Boolean(s.fechaFinalizacion || s.fechaCierre || s.fechaResultado);
+}
+function filtrarPanelVisitas() {
+    const texto = String(document.getElementById('filtro-visitas-texto')?.value || '').trim().toLocaleLowerCase('es');
+    const centro = String(document.getElementById('filtro-visitas-centro')?.value || '');
+    const estado = String(document.getElementById('filtro-visitas-estado')?.value || '');
+    let visibles = 0;
+    document.querySelectorAll('#lista-visitas-solicitadas .visita-card').forEach(card => {
+        const coincideTexto = !texto || card.textContent.toLocaleLowerCase('es').includes(texto);
+        const coincideCentro = !centro || card.dataset.centro === centro;
+        const coincideEstado = !estado || card.dataset.estado === estado;
+        card.style.display = coincideTexto && coincideCentro && coincideEstado ? '' : 'none';
+        if (card.style.display !== 'none') visibles++;
+    });
+    const contador = document.getElementById('contador-visitas-filtradas');
+    if (contador) contador.textContent = visibles + (visibles === 1 ? ' solicitud visible.' : ' solicitudes visibles.');
+}
+function limpiarFiltrosPanelVisitas() {
+    ['filtro-visitas-texto','filtro-visitas-centro','filtro-visitas-estado'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+    filtrarPanelVisitas();
+}
+function imprimirPanelVisitas(general) {
+    const lista = document.getElementById('lista-visitas-solicitadas');
+    if (!lista) return;
+    const centro = document.getElementById('filtro-visitas-centro')?.value || '';
+    const texto = String(document.getElementById('filtro-visitas-texto')?.value || '').trim().toLocaleLowerCase('es');
+    const estado = document.getElementById('filtro-visitas-estado')?.value || '';
+    const cards = Array.from(lista.querySelectorAll('.visita-card')).filter(card => {
+        if (general) return true;
+        return card.style.display !== 'none';
+    });
+    if (!cards.length) { alert('No hay solicitudes pendientes que imprimir con los filtros seleccionados.'); return; }
+    const ventana = window.open('', '_blank');
+    if (!ventana) { alert('El navegador ha bloqueado la ventana de impresión. Permite las ventanas emergentes para SIMUN.'); return; }
+    const titulo = general ? 'Listado general de visitas técnicas pendientes' : (centro ? 'Visitas técnicas pendientes — ' + centro : 'Visitas técnicas pendientes — listado filtrado');
+    const contenido = cards.map(card => {
+        const copia = card.cloneNode(true);
+        copia.querySelectorAll('.visita-acciones').forEach(el => el.remove());
+        copia.style.display = 'block';
+        return copia.outerHTML;
+    }).join('');
+    ventana.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' + escaparHTMLSIMUN(titulo) + '</title><style>body{font-family:Arial,sans-serif;padding:22px;color:#222}h1{font-size:20px}p{font-size:12px;color:#555}.visita-card{background:#fff;border:1px solid #ccc;border-left:5px solid #6f42c1;border-radius:5px;padding:12px;margin:0 0 10px;break-inside:avoid}.visita-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.visita-dato{background:#f5f5f5;padding:7px;font-size:11px}.visita-dato strong{display:block}.badge{display:inline-block;padding:3px 6px}.visita-acciones{display:none!important}@media print{body{padding:0}}</style></head><body><h1>' + escaparHTMLSIMUN(titulo) + '</h1><p>SIMUN · Solicitudes pendientes · Impreso: ' + new Date().toLocaleString('es-ES') + '</p>' + contenido + '<script>window.onload=function(){window.print();};<\/script></body></html>');
+    ventana.document.close();
+}
+
 async function cargarPanelVisitas() {
     const contenedor = document.getElementById('lista-visitas-solicitadas');
     const contador = document.getElementById('contador-visitas-panel');
@@ -3196,9 +3279,27 @@ async function cargarPanelVisitas() {
             throw new Error((r && r.message) || 'No se pudieron obtener las solicitudes.');
         }
 
-        const lista = Array.isArray(r.solicitudes)
+        const listaRecibida = Array.isArray(r.solicitudes)
             ? r.solicitudes
             : (Array.isArray(r.data) ? r.data : []);
+        // Esta pantalla muestra únicamente solicitudes aún pendientes; nunca resultados finalizados.
+        const lista = listaRecibida.filter(s => !solicitudVisitaFinalizada(s));
+        solicitudesVisitasPanel = lista;
+
+        const selectorCentro = document.getElementById('filtro-visitas-centro');
+        const selectorEstado = document.getElementById('filtro-visitas-estado');
+        if (selectorCentro) {
+            const seleccionado = selectorCentro.value;
+            const centros = [...new Set(lista.map(s => String(s.entidad || s.solicitante || 'Entidad no indicada').trim()))].sort((a,b) => a.localeCompare(b,'es'));
+            selectorCentro.innerHTML = '<option value="">Todos los centros</option>' + centros.map(c => '<option value="' + escaparHTMLSIMUN(c) + '">' + escaparHTMLSIMUN(c) + '</option>').join('');
+            if (centros.includes(seleccionado)) selectorCentro.value = seleccionado;
+        }
+        if (selectorEstado) {
+            const seleccionado = selectorEstado.value;
+            const estados = [...new Set(lista.map(s => String(s.estadoIncidencia || 'Sin estado').trim()))].sort((a,b) => a.localeCompare(b,'es'));
+            selectorEstado.innerHTML = '<option value="">Todos los estados</option>' + estados.map(e => '<option value="' + escaparHTMLSIMUN(e) + '">' + escaparHTMLSIMUN(e) + '</option>').join('');
+            if (estados.includes(seleccionado)) selectorEstado.value = seleccionado;
+        }
 
         if (contador) {
             contador.textContent = lista.length +
@@ -3224,7 +3325,7 @@ async function cargarPanelVisitas() {
             const prioridad = String(s.prioridad || 'NORMAL').toUpperCase();
             const estadoInc = s.estadoIncidencia || '—';
             return `
-                <div class="visita-card">
+                <div class="visita-card" data-centro="${esc(entidad)}" data-estado="${esc(estadoInc)}">
                     <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
                         <div><strong style="font-size:16px; color:#343a40;">${esc(ref || 'Sin referencia')}</strong><div style="margin-top:4px;"><span class="badge badge-visita">${esc(tipo)}</span></div></div>
                         <div style="font-size:12px; color:#6c757d;"><strong>Solicitud:</strong> ${esc(fecha)}</div>
@@ -3247,6 +3348,7 @@ async function cargarPanelVisitas() {
                     </div>
                 </div>`;
         }).join('');
+        filtrarPanelVisitas();
     } catch (err) {
         if (contador) contador.textContent = 'No se pudieron cargar las solicitudes.';
         contenedor.innerHTML = '<div style="text-align:center; padding:25px; color:#d9251d; background:#fff5f5; border:1px solid #f1b0b7; border-radius:7px;">❌ ' +
