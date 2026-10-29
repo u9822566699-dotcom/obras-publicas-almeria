@@ -457,6 +457,54 @@
 
         
 
+        /* JUSTIFICANTE DE INCIDENCIA EN LA MISMA PANTALLA */
+        #justificante-incidencia-vista {
+            display:none; background:#fff; color:#202124; border:1px solid #d7dce1;
+            border-radius:8px; padding:24px; margin:22px auto 8px; max-width:900px;
+            text-align:left; box-shadow:0 2px 10px rgba(0,0,0,.06); font-family:Arial,sans-serif;
+        }
+        #justificante-incidencia-vista .justif-cabecera { display:flex; align-items:center; gap:16px; border-bottom:2px solid #263746; padding-bottom:14px; margin-bottom:16px; }
+        #justificante-incidencia-vista .justif-emblema { font-size:12px; font-weight:700; color:#263746; min-width:100px; }
+        #justificante-incidencia-vista .justif-emblema span { display:block; color:#d9251d; letter-spacing:2px; margin-top:3px; }
+        #justificante-incidencia-vista .justif-institucion { font-size:12px; line-height:1.45; }
+        #justificante-incidencia-vista .justif-institucion strong { display:block; font-size:15px; margin-bottom:3px; }
+        #justificante-incidencia-vista .justif-titulo { text-align:center; font-size:19px; margin:16px 0 5px; letter-spacing:.3px; }
+        #justificante-incidencia-vista .justif-subtitulo { text-align:center; color:#5b6570; font-size:11px; margin-bottom:18px; }
+        #justificante-incidencia-vista .justif-referencias { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+        #justificante-incidencia-vista .justif-ref { border:1px solid #d7dce1; border-radius:5px; padding:10px 12px; background:#f8f9fa; }
+        #justificante-incidencia-vista .justif-ref span { display:block; color:#58636e; font-size:10px; text-transform:uppercase; margin-bottom:4px; }
+        #justificante-incidencia-vista .justif-ref strong { font-size:19px; }
+        #justificante-incidencia-vista .justif-seccion { font-size:12px; font-weight:700; background:#eef1f4; padding:7px 9px; margin:12px 0 8px; border-left:3px solid #d9251d; }
+        #justificante-incidencia-vista .justif-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
+        #justificante-incidencia-vista .justif-dato { font-size:11px; line-height:1.4; overflow-wrap:anywhere; }
+        #justificante-incidencia-vista .justif-dato span { display:block; color:#626d78; font-size:9px; text-transform:uppercase; margin-bottom:2px; }
+        #justificante-incidencia-vista .justif-texto { border:1px solid #d7dce1; border-radius:4px; padding:9px; min-height:28px; font-size:11px; white-space:pre-wrap; overflow-wrap:anywhere; }
+        #justificante-incidencia-vista .justif-pie { margin-top:16px; padding-top:8px; border-top:1px solid #d7dce1; color:#59636e; font-size:9px; line-height:1.4; }
+        #justificante-incidencia-vista .justif-acciones { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
+        #justificante-incidencia-vista .justif-acciones button { border:0; border-radius:5px; padding:10px 15px; font-weight:700; cursor:pointer; }
+        #justificante-incidencia-vista .justif-btn-imprimir { background:#198754; color:#fff; }
+        #justificante-incidencia-vista .justif-btn-cerrar { background:#6c757d; color:#fff; }
+        @media (max-width:600px) {
+            #justificante-incidencia-vista { padding:14px; }
+            #justificante-incidencia-vista .justif-cabecera { align-items:flex-start; }
+            #justificante-incidencia-vista .justif-referencias, #justificante-incidencia-vista .justif-grid { grid-template-columns:1fr; }
+        }
+        @page { size:A4; margin:12mm; }
+        @media print {
+            body * { visibility:hidden !important; }
+            #justificante-incidencia-vista, #justificante-incidencia-vista * { visibility:visible !important; }
+            #justificante-incidencia-vista {
+                display:block !important; position:absolute !important; left:0 !important; top:0 !important;
+                width:100% !important; max-width:none !important; margin:0 !important; padding:0 !important;
+                border:0 !important; border-radius:0 !important; box-shadow:none !important; color:#111 !important;
+                font-size:10pt !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+            }
+            #justificante-incidencia-vista .justif-acciones { display:none !important; }
+            #justificante-incidencia-vista .justif-seccion { break-after:avoid; }
+            #justificante-incidencia-vista .justif-cabecera, #justificante-incidencia-vista .justif-referencias,
+            #justificante-incidencia-vista .justif-grid, #justificante-incidencia-vista .justif-texto { break-inside:avoid; }
+        }
+
         /* MODAL DE CIERRE */
         .modal-overlay {
             position: fixed;
@@ -1163,6 +1211,51 @@
                 <button type="button" class="btn-post-registro inicio" onclick="volverInicioTrasRegistro()">← Volver a la pantalla de inicio</button>
                 <button type="button" class="btn-post-registro nueva" onclick="realizarOtraIncidencia()">＋ Realizar otra incidencia</button>
             </div>
+            <section id="justificante-incidencia-vista" aria-label="Justificante de incidencia">
+                <div class="justif-cabecera">
+                    <div class="justif-emblema">ALMERÍA<span>CIUDAD</span></div>
+                    <div class="justif-institucion"><strong>Ayuntamiento de Almería</strong>Área de Obras Públicas, Mantenimiento, Accesibilidad y Economía Azul<br>Sección de Conservación y Mantenimiento</div>
+                </div>
+                <h2 class="justif-titulo">JUSTIFICANTE DE INCIDENCIA</h2>
+                <div class="justif-subtitulo">Resguardo de registro · SIMUN</div>
+                <div class="justif-referencias">
+                    <div class="justif-ref"><span>Número de referencia</span><strong id="justif-ref"></strong></div>
+                    <div class="justif-ref"><span>PIN de seguridad</span><strong id="justif-pin"></strong></div>
+                </div>
+                <div class="justif-seccion">DATOS DEL CENTRO / EDIFICIO</div>
+                <div class="justif-grid">
+                    <div class="justif-dato"><span>Centro o edificio</span><div id="justif-centro"></div></div>
+                    <div class="justif-dato"><span>Fecha de registro</span><div id="justif-fecha-registro"></div></div>
+                    <div class="justif-dato"><span>Dirección</span><div id="justif-direccion"></div></div>
+                    <div class="justif-dato"><span>Código postal y localidad</span><div id="justif-localidad"></div></div>
+                    <div class="justif-dato"><span>Municipio</span><div id="justif-municipio"></div></div>
+                    <div class="justif-dato"><span>Persona responsable</span><div id="justif-responsable"></div></div>
+                    <div class="justif-dato"><span>Teléfono</span><div id="justif-telefono"></div></div>
+                    <div class="justif-dato"><span>Correo electrónico</span><div id="justif-email"></div></div>
+                </div>
+                <div class="justif-seccion">DETALLE DE LA INCIDENCIA</div>
+                <div class="justif-grid">
+                    <div class="justif-dato"><span>Oficio</span><div id="justif-oficio"></div></div>
+                    <div class="justif-dato"><span>Tipo de incidencia</span><div id="justif-tipo"></div></div>
+                    <div class="justif-dato"><span>¿Se había notificado anteriormente?</span><div id="justif-notificada"></div></div>
+                    <div class="justif-dato"><span>Solicitud de visita técnica</span><div id="justif-visita"></div></div>
+                </div>
+                <div class="justif-seccion">DESCRIPCIÓN DE LA INCIDENCIA</div>
+                <div class="justif-texto" id="justif-descripcion"></div>
+                <div id="justif-adicionales-wrap" style="display:none">
+                    <div class="justif-seccion">OBSERVACIONES ADICIONALES</div>
+                    <div class="justif-texto" id="justif-adicionales"></div>
+                </div>
+                <div id="justif-visita-motivo-wrap" style="display:none">
+                    <div class="justif-seccion">MOTIVO DE LA VISITA TÉCNICA</div>
+                    <div class="justif-texto" id="justif-visita-motivo"></div>
+                </div>
+                <div class="justif-pie">Conserve este justificante. El número de referencia y el PIN de seguridad permiten consultar el estado de la incidencia en SIMUN. Documento generado electrónicamente tras el registro de la solicitud.</div>
+                <div class="justif-acciones">
+                    <button type="button" class="justif-btn-cerrar" onclick="cerrarJustificanteIncidencia()">Cerrar justificante</button>
+                    <button type="button" class="justif-btn-imprimir" onclick="imprimirJustificanteIncidencia()">Imprimir justificante</button>
+                </div>
+            </section>
         </div>
 
         <div class="header">
@@ -1809,6 +1902,8 @@
         const resultadoVisita = document.getElementById('resultado-visita-inicial');
         if (resultadoVisita) { resultadoVisita.style.display = 'none'; resultadoVisita.textContent = ''; }
         document.getElementById('caja-referencia').style.display = 'none';
+        const justificante = document.getElementById('justificante-incidencia-vista');
+        if (justificante) justificante.style.display = 'none';
         const bloqueoEnvio = document.getElementById('bloqueo-envio-incidencia');
         if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
         if (document.getElementById('ref-buscar-entidad')) document.getElementById('ref-buscar-entidad').value = '';
@@ -2576,9 +2671,9 @@
                 }
                 if (bloqueoEnvio) bloqueoEnvio.style.display = 'none';
                 btnEnviar.parentElement.style.display = 'none';
-                // La confirmación queda visible en pantalla junto con las dos acciones posibles.
-                // El usuario ya no necesita cerrar un alert para continuar.
-                setTimeout(() => window.print(), 300);
+                // El justificante se muestra dentro de SIMUN; no se abre una ventana emergente.
+                // La impresión queda a elección del usuario mediante el botón del propio documento.
+                prepararJustificanteIncidencia(respuesta.ref, respuesta.pin, datos);
             } else {
                 throw new Error(respuesta.message || "El servidor no pudo registrar la incidencia.");
             }
@@ -2589,6 +2684,57 @@
             btnEnviar.disabled = false;
             btnEnviar.textContent = "Enviar Notificación";
         }
+    }
+
+    function simunTextoSeguro(valor) {
+        return String(valor == null || valor === '' ? '—' : valor).replace(/[&<>"']/g, function (c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+        });
+    }
+
+    function rellenarDatoJustificante(id, valor) {
+        const nodo = document.getElementById(id);
+        if (nodo) nodo.textContent = (valor == null || String(valor).trim() === '') ? '—' : String(valor).trim();
+    }
+
+    function prepararJustificanteIncidencia(ref, pin, datos) {
+        const vista = document.getElementById('justificante-incidencia-vista');
+        if (!vista) return;
+        rellenarDatoJustificante('justif-ref', ref);
+        rellenarDatoJustificante('justif-pin', pin);
+        rellenarDatoJustificante('justif-centro', datos.centro);
+        rellenarDatoJustificante('justif-fecha-registro', new Date().toLocaleDateString('es-ES'));
+        rellenarDatoJustificante('justif-direccion', datos.direccion);
+        rellenarDatoJustificante('justif-localidad', [datos.cp, datos.localidad].filter(v => String(v || '').trim()).join(' '));
+        rellenarDatoJustificante('justif-municipio', datos.municipio);
+        rellenarDatoJustificante('justif-responsable', datos.responsable);
+        rellenarDatoJustificante('justif-telefono', datos.telefono);
+        rellenarDatoJustificante('justif-email', datos.emailResponsable);
+        rellenarDatoJustificante('justif-oficio', datos.oficio);
+        rellenarDatoJustificante('justif-tipo', datos.tipo);
+        rellenarDatoJustificante('justif-notificada', datos.notificadaAntes);
+        rellenarDatoJustificante('justif-visita', datos.solicitarVisita === 'SI' ? 'Sí' : 'No');
+        rellenarDatoJustificante('justif-descripcion', datos.obsIncidencia);
+        const adicionales = String(datos.obsAdicionales || '').trim();
+        const adicionalesWrap = document.getElementById('justif-adicionales-wrap');
+        if (adicionalesWrap) adicionalesWrap.style.display = adicionales ? 'block' : 'none';
+        rellenarDatoJustificante('justif-adicionales', adicionales);
+        const motivo = String(datos.motivoVisita || '').trim();
+        const motivoWrap = document.getElementById('justif-visita-motivo-wrap');
+        if (motivoWrap) motivoWrap.style.display = (datos.solicitarVisita === 'SI' && motivo) ? 'block' : 'none';
+        rellenarDatoJustificante('justif-visita-motivo', motivo);
+        vista.style.display = 'block';
+    }
+
+    function imprimirJustificanteIncidencia() {
+        const vista = document.getElementById('justificante-incidencia-vista');
+        if (!vista || vista.style.display === 'none') return;
+        window.print();
+    }
+
+    function cerrarJustificanteIncidencia() {
+        const vista = document.getElementById('justificante-incidencia-vista');
+        if (vista) vista.style.display = 'none';
     }
 
     function volverInicioTrasRegistro() {
@@ -2704,7 +2850,7 @@
                 contenedor.innerHTML = '<div style="text-align:center; padding:18px; color:#777;">No hay incidencias registradas todavía.</div>';
                 return;
             }
-            let html = '<table class="tabla-incidencias" style="min-width:820px;"><thead><tr><th>Referencia</th><th>Fecha</th><th>Oficio</th><th>Trabajo</th><th>Prioridad</th><th>Estado</th><th>Finalización</th><th>Observación</th></tr></thead><tbody>';
+            let html = '<table class="tabla-incidencias" style="min-width:980px;"><thead><tr><th>Referencia</th><th>Fecha</th><th>Oficio</th><th>Trabajo</th><th>Prioridad</th><th>Estado</th><th>Finalización</th><th>Justificación de cierre</th><th>Motivo del rechazo</th></tr></thead><tbody>';
             datos.slice(0, 20).forEach(function(inc) {
                 const estado = String(inc.estado || '');
                 let color = '#6c757d';
@@ -2712,6 +2858,10 @@
                 else if (estado === 'Inicio') color = '#0d6efd';
                 else if (estado === 'Completada' || estado === 'Cerrada') color = '#198754';
                 else if (estado.indexOf('Rechazada') === 0) color = '#dc3545';
+                const justificacionCierre = String(inc.justificacionCierre || '').trim();
+                const justificacion = justificacionCierre
+                    ? '<div style="background:#f3efff;border-left:3px solid #6f42c1;padding:7px 9px;border-radius:4px;white-space:pre-line;"><strong style="color:#6f42c1;">Justificación de cierre:</strong><br>' + escaparHtml(justificacionCierre) + '</div>'
+                    : '—';
                 const motivoRechazo = String(inc.motivoRechazoTecnico || '').trim();
                 const observacion = motivoRechazo
                     ? '<div style="background:#fff5f5;border-left:3px solid #dc3545;padding:7px 9px;border-radius:4px;white-space:pre-line;"><strong style="color:#b02a37;">✕ Motivo del rechazo:</strong><br>' + escaparHtml(motivoRechazo) + '</div>'
@@ -2724,6 +2874,7 @@
                     '<td>' + escaparHtml(inc.prioridad || 'NORMAL') + '</td>' +
                     '<td><span style="font-weight:bold;color:' + color + ';">' + escaparHtml(estado || '—') + '</span></td>' +
                     '<td>' + escaparHtml(formatearFechaVisible(inc.fechaFinalizacion)) + '</td>' +
+                    '<td style="min-width:260px;">' + justificacion + '</td>' +
                     '<td style="min-width:240px;">' + observacion + '</td>' +
                     '</tr>';
             });
