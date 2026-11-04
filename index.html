@@ -187,6 +187,53 @@
             width: 155px;
             min-width: 155px;
         }
+        /* Panel Empresa: conserva la tabla original y reserva espacio para fechas y tiempos. */
+        #vista-empresa {
+            max-width: 1450px;
+        }
+        #vista-empresa .tabla-incidencias th.columna-tiempos,
+        #vista-empresa .tabla-incidencias td.columna-tiempos {
+            width: 205px;
+            min-width: 205px;
+        }
+        #vista-empresa .tabla-incidencias th:last-child,
+        #vista-empresa .tabla-incidencias td:last-child {
+            min-width: 150px;
+        }
+        .fechas-tiempos-empresa {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 185px;
+            font-size: 11px;
+        }
+        .fechas-tiempos-empresa .fecha-empresa-linea {
+            display: flex;
+            justify-content: space-between;
+            gap: 7px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #edf0f3;
+        }
+        .fechas-tiempos-empresa .fecha-empresa-label {
+            color: #607080;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .fechas-tiempos-empresa .fecha-empresa-valor {
+            color: #343a40;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .fechas-tiempos-empresa .tiempos-tecnico {
+            gap: 5px;
+            margin-top: 3px;
+        }
+        .fechas-tiempos-empresa .tiempo-tecnico-item {
+            padding: 5px 6px;
+        }
+        .fechas-tiempos-empresa .tiempo-tecnico-valor {
+            font-size: 14px;
+        }
         .tiempos-tecnico {
             display: flex;
             flex-direction: column;
@@ -979,6 +1026,7 @@
                     <th>Colegio / Centro</th>
                     <th>Responsable</th>
                     <th>Observaciones</th>
+                    <th class="columna-tiempos" style="text-align:center;">Tiempos y fechas</th>
                     <th style="width: 150px; text-align: center;">Estado / Acción</th>
                 </tr>
             </thead>
@@ -3974,9 +4022,36 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
         window.scrollTo(0, 0);
     }
 
+    function formatearFechaHoraEmpresa(valor) {
+        if (!valor) return '—';
+        const fecha = parsearFechaTecnico(valor);
+        if (!fecha) return formatearFechaVisible(valor);
+        const fechaTexto = String(fecha.getDate()).padStart(2, '0') + '/' +
+            String(fecha.getMonth() + 1).padStart(2, '0') + '/' + fecha.getFullYear();
+        const tieneHora = /[T ]\d{1,2}:\d{2}/.test(String(valor)) ||
+            (valor instanceof Date && (valor.getHours() !== 0 || valor.getMinutes() !== 0));
+        return fechaTexto + (tieneHora ? ' ' + String(fecha.getHours()).padStart(2, '0') + ':' + String(fecha.getMinutes()).padStart(2, '0') : '');
+    }
+
+    function renderizarFechasYTiemposEmpresa(inc) {
+        const fechaLinea = (etiqueta, valor) => `
+            <div class="fecha-empresa-linea">
+                <span class="fecha-empresa-label">${etiqueta}</span>
+                <span class="fecha-empresa-valor">${formatearFechaHoraEmpresa(valor)}</span>
+            </div>`;
+        return `
+            <div class="fechas-tiempos-empresa">
+                ${fechaLinea('Registro', inc.fechaRegistro)}
+                ${fechaLinea('Aceptación', inc.fechaAceptado)}
+                ${fechaLinea('Inicio', inc.fechaInicio)}
+                ${fechaLinea('Finalización', inc.fechaFinalizacion || inc.fechaCierre)}
+                ${renderizarTiemposTecnico(inc)}
+            </div>`;
+    }
+
     async function cargarTablaEmpresaDesdeSheet() {
         const tbody = document.getElementById('tabla-empresa-body');
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#666;">⏳ Cargando incidencias asignadas...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#666;">⏳ Cargando incidencias asignadas...</td></tr>';
 
         try {
             const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
@@ -3988,11 +4063,76 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
             tbody.innerHTML = '';
 
             if (respuesta.status === "SUCCESS" && respuesta.data && respuesta.data.length > 0) {
-                // Las COMPLETADAS siempre van al final y se ordenan por fecha de terminación.
-                // Entre las no completadas, las URGENTES van primero.
+                // Se conserva el mismo orden y agrupación visual del panel Técnico:
+                // URGENTES → OTRO OFICIO → PENDIENTES agrupadas por centro → FINALIZADAS.
                 const incidenciasOrdenadas = ordenarIncidenciasPorPrioridadYFinalizacion(respuesta.data);
+                const estadoNormalizado = inc => String(inc.estado || '').trim().toLowerCase();
+                const esFinalizada = inc => ['completada', 'cerrada'].includes(estadoNormalizado(inc));
+                const esUrgente = inc => String(inc.prioridad || '').trim().toUpperCase() === 'URGENTE' && !esFinalizada(inc);
+                const esEspecial = inc => String(inc.procedenteOtroOficio || '').trim().toUpperCase() === 'SI' && !esUrgente(inc) && !esFinalizada(inc);
+                const esPendiente = inc => !esUrgente(inc) && !esEspecial(inc) && !esFinalizada(inc);
+
+                const gruposPendientes = new Map();
+                incidenciasOrdenadas.forEach(inc => {
+                    if (esPendiente(inc)) {
+                        const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
+                        gruposPendientes.set(centro, (gruposPendientes.get(centro) || 0) + 1);
+                    }
+                });
+
+                let seccionUrgentesMostrada = false;
+                let seccionEspecialesMostrada = false;
+                let seccionPendientesMostrada = false;
+                let seccionFinalizadasMostrada = false;
+                const centrosMostrados = new Set();
+
+                const anadirCabeceraSeccion = (texto, fondo, borde) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td colspan="7" style="padding:10px 12px; background:${fondo}; border-top:2px solid ${borde}; border-bottom:1px solid #ced4da; font-weight:bold; color:#343a40;">${texto}</td>`;
+                    tbody.appendChild(tr);
+                };
 
                 incidenciasOrdenadas.forEach(inc => {
+                    const urgente = esUrgente(inc);
+                    const especial = esEspecial(inc);
+                    const pendiente = esPendiente(inc);
+                    const finalizada = esFinalizada(inc);
+
+                    if (urgente && !seccionUrgentesMostrada) {
+                        seccionUrgentesMostrada = true;
+                        anadirCabeceraSeccion('🚨 URGENTES', '#fdecec', '#dc3545');
+                    }
+                    if (especial && !seccionEspecialesMostrada) {
+                        seccionEspecialesMostrada = true;
+                        anadirCabeceraSeccion('⭐ PROCEDENTES DE OTRO OFICIO', '#fff3cd', '#fd7e14');
+                    }
+                    if (pendiente && !seccionPendientesMostrada) {
+                        seccionPendientesMostrada = true;
+                        anadirCabeceraSeccion('📋 PENDIENTES', '#e9ecef', '#adb5bd');
+                    }
+                    if (finalizada && !seccionFinalizadasMostrada) {
+                        seccionFinalizadasMostrada = true;
+                        anadirCabeceraSeccion('✓ COMPLETADAS / FINALIZADAS', '#e9f7ef', '#198754');
+                    }
+
+                    // Los grupos de centros permanecen siempre abiertos, como en Técnico.
+                    if (pendiente) {
+                        const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
+                        if (!centrosMostrados.has(centro)) {
+                            centrosMostrados.add(centro);
+                            const totalCentro = gruposPendientes.get(centro) || 1;
+                            const trGrupo = document.createElement('tr');
+                            trGrupo.innerHTML = `
+                                <td colspan="7" style="padding:10px 12px; background:#f3f4f6; border-top:1px solid #adb5bd; border-bottom:1px solid #ced4da;">
+                                    <strong style="color:#343a40;">🏫 ${centro}</strong>
+                                    <span style="margin-left:10px; font-size:12px; font-weight:bold; color:#6c757d;">
+                                        ${totalCentro} ${totalCentro === 1 ? 'incidencia pendiente' : 'incidencias pendientes'}
+                                    </span>
+                                </td>`;
+                            tbody.appendChild(trGrupo);
+                        }
+                    }
+
                     const tr = document.createElement('tr');
                     const badgePrioridad = inc.prioridad === 'URGENTE' 
                         ? '<span class="badge badge-urgente">🚨 URGENTE</span>' 
@@ -4036,16 +4176,17 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
                             ${inc.motivoRevisionTecnica ? `<div style="margin-top:6px; color:#fd7e14;"><strong>Revisión:</strong><br>${inc.motivoRevisionTecnica}</div>` : ''}
                             ${inc.historialOficios ? `<div style="margin-top:6px; color:#0d6efd;"><strong>Historial de oficios:</strong><br><span style="white-space:pre-line;">${inc.historialOficios}</span></div>` : ''}
                         </td>
+                        <td class="columna-tiempos">${renderizarFechasYTiemposEmpresa(inc)}</td>
                         <td style="text-align:center;">${columnaAcciones}</td>
                     `;
 
                     tbody.appendChild(tr);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: #777;">No se han encontrado incidencias asignadas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #777;">No se han encontrado incidencias asignadas.</td></tr>';
             }
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: #d9251d;">Error al cargar incidencias.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: #d9251d;">Error al cargar incidencias.</td></tr>';
         }
     }
 
