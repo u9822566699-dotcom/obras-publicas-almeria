@@ -271,12 +271,13 @@
         }
         .acciones-tecnico-grid {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(3, minmax(145px, 1fr));
+            gap: 8px;
             width: 100%;
             box-sizing: border-box;
         }
         .acciones-tecnico-grupo {
+            min-width: 0;
             background: #f7f9fc;
             border: 1px solid #dfe5ec;
             border-radius: 10px;
@@ -885,10 +886,10 @@
                     <th style="width: 120px;">Ref / PIN</th>
                     <th>Centro</th>
                     <th>Oficio / Tipo</th>
-                    <th>Detalles / Contacto</th>
+                    <th style="width: 230px; min-width: 210px;">Detalle / Contacto</th>
                     <th style="width: 130px;">Estado</th>
                     <th class="columna-tiempos" style="width: 155px; text-align: center;">Tiempos</th>
-                    <th style="width: 290px; min-width: 290px; text-align: center;">Acciones</th>
+                    <th style="width: 510px; min-width: 490px; text-align: center;">Gestión de incidencias</th>
                 </tr>
             </thead>
             <tbody id="tabla-tecnico-body">
@@ -2979,17 +2980,47 @@
     }
 
     function normalizarFechaOrden(valor) {
-        if (!valor) return Number.MAX_SAFE_INTEGER;
+        // Admite fechas Date, dd/mm/aaaa, dd-mm-aaaa e ISO (con o sin hora).
+        // Las fechas vacías o no reconocibles quedan al final del orden.
+        if (valor === null || valor === undefined || valor === '' || valor === 'No consta') {
+            return Number.MAX_SAFE_INTEGER;
+        }
+        if (valor instanceof Date) {
+            const tiempo = valor.getTime();
+            return Number.isFinite(tiempo) ? tiempo : Number.MAX_SAFE_INTEGER;
+        }
+
         const t = String(valor).trim();
+        if (!t) return Number.MAX_SAFE_INTEGER;
+
         let m = t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
         if (m) {
-            let y = Number(m[3]);
-            if (y < 100) y += 2000;
-            const d = new Date(y, Number(m[2])-1, Number(m[1]), Number(m[4]||0), Number(m[5]||0), Number(m[6]||0));
-            if (!isNaN(d.getTime())) return d.getTime();
+            let anio = Number(m[3]);
+            if (anio < 100) anio += 2000;
+            const dia = Number(m[1]), mes = Number(m[2]);
+            const hora = Number(m[4] || 0), minuto = Number(m[5] || 0), segundo = Number(m[6] || 0);
+            const d = new Date(anio, mes - 1, dia, hora, minuto, segundo);
+            // Evita que JavaScript convierta fechas imposibles (31/02) en marzo.
+            if (d.getFullYear() === anio && d.getMonth() === mes - 1 && d.getDate() === dia &&
+                hora < 24 && minuto < 60 && segundo < 60) return d.getTime();
+            return Number.MAX_SAFE_INTEGER;
         }
+
+        // ISO: construimos en hora local si no incluye zona horaria, para evitar
+        // desplazamientos de día en fechas que llegan sin hora desde Sheets.
+        m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+        if (m) {
+            const anio = Number(m[1]), mes = Number(m[2]), dia = Number(m[3]);
+            const hora = Number(m[4] || 0), minuto = Number(m[5] || 0), segundo = Number(m[6] || 0);
+            const d = new Date(anio, mes - 1, dia, hora, minuto, segundo);
+            if (d.getFullYear() === anio && d.getMonth() === mes - 1 && d.getDate() === dia &&
+                hora < 24 && minuto < 60 && segundo < 60) return d.getTime();
+            return Number.MAX_SAFE_INTEGER;
+        }
+
+        // Último recurso para formatos completos reconocidos por el navegador.
         const d = new Date(t);
-        return isNaN(d.getTime()) ? Number.MAX_SAFE_INTEGER : d.getTime();
+        return Number.isNaN(d.getTime()) ? Number.MAX_SAFE_INTEGER : d.getTime();
     }
 
     function esIncidenciaNueva(inc) {
@@ -3000,54 +3031,63 @@
         return fecha >= limite && fecha <= ahora;
     }
 
+    function normalizarNombreCentroOrden(valor) {
+        return String(valor || 'Centro sin identificar').trim().replace(/\s+/g, ' ')
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es') || 'centro sin identificar';
+    }
+
     function ordenarIncidenciasPorPrioridadYFinalizacion(datos) {
-        const lista = (Array.isArray(datos) ? datos : []).map((inc, i) => ({...inc, __i:i}));
-        const estado = inc => String(inc.estado || '').trim().toLowerCase();
-        const esFinalizada = inc => estado(inc) === 'completada' || estado(inc) === 'cerrada';
+        const lista = (Array.isArray(datos) ? datos : []).map((inc, i) => ({ ...inc, __i: i }));
+        const estado = inc => String(inc.estado || '').trim().toLocaleLowerCase('es');
+        const esFinalizada = inc => ['completada', 'cerrada'].includes(estado(inc));
         const esUrgente = inc => String(inc.prioridad || '').trim().toUpperCase() === 'URGENTE' && !esFinalizada(inc);
         const esEspecial = inc => String(inc.procedenteOtroOficio || '').trim().toUpperCase() === 'SI' && !esUrgente(inc) && !esFinalizada(inc);
         const fechaRegistro = inc => normalizarFechaOrden(inc.fechaRegistro);
         const fechaFin = inc => normalizarFechaOrden(inc.fechaCierre || inc.fechaFinalizacion);
+        const compararFechaYOrdenOriginal = (a, b, obtenerFecha) =>
+            obtenerFecha(a) - obtenerFecha(b) || a.__i - b.__i;
+        const claveCentro = inc => normalizarNombreCentroOrden(inc.colegio);
 
-        // ORDEN FIJO DEL PANEL:
-        // 1) URGENTES
-        // 2) PROCEDENTES DE OTRO OFICIO (especiales)
-        // 3) PENDIENTES, agrupadas por centro
-        // 4) COMPLETADAS / FINALIZADAS / CERRADAS
-        const urgentes = lista
-            .filter(esUrgente)
-            .sort((a,b) => fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
+        // Se conserva el orden funcional de las secciones: urgentes, otro oficio,
+        // pendientes agrupadas por centro y, finalmente, incidencias finalizadas.
+        const urgentes = lista.filter(esUrgente)
+            .sort((a, b) => compararFechaYOrdenOriginal(a, b, fechaRegistro));
+        const especiales = lista.filter(esEspecial)
+            .sort((a, b) => compararFechaYOrdenOriginal(a, b, fechaRegistro));
 
-        const especiales = lista
-            .filter(esEspecial)
-            .sort((a,b) => fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
-
-        const mapa = new Map();
-        lista
-            .filter(inc => !esUrgente(inc) && !esEspecial(inc) && !esFinalizada(inc))
+        // Agrupación normalizada: evita separar un mismo centro por diferencias
+        // de mayúsculas, tildes o espacios accidentales en el nombre recibido.
+        const mapaCentros = new Map();
+        lista.filter(inc => !esUrgente(inc) && !esEspecial(inc) && !esFinalizada(inc))
             .forEach(inc => {
-                const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
-                if (!mapa.has(centro)) mapa.set(centro, []);
-                mapa.get(centro).push(inc);
+                const clave = claveCentro(inc);
+                if (!mapaCentros.has(clave)) {
+                    mapaCentros.set(clave, {
+                        nombre: String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar',
+                        incidencias: []
+                    });
+                }
+                mapaCentros.get(clave).incidencias.push(inc);
             });
 
-        const pendientes = [];
-        [...mapa.entries()]
-            .sort((a,b) => {
-                const fa = Math.min(...a[1].map(fechaRegistro));
-                const fb = Math.min(...b[1].map(fechaRegistro));
-                return fa - fb || a[0].localeCompare(b[0], 'es');
-            })
-            .forEach(([centro, arr]) => {
-                arr.sort((a,b) => fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
-                pendientes.push(...arr);
-            });
+        const grupos = [...mapaCentros.values()].map(grupo => {
+            grupo.incidencias.sort((a, b) => compararFechaYOrdenOriginal(a, b, fechaRegistro));
+            const fechasValidas = grupo.incidencias.map(fechaRegistro).filter(f => f !== Number.MAX_SAFE_INTEGER);
+            grupo.fechaMasAntigua = fechasValidas.length ? Math.min(...fechasValidas) : Number.MAX_SAFE_INTEGER;
+            return grupo;
+        });
 
-        const finalizadas = lista
-            .filter(esFinalizada)
-            .sort((a,b) => fechaFin(a) - fechaFin(b) || fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
+        // El centro cuya incidencia pendiente más antigua se registró primero
+        // aparece primero; dentro del centro, las incidencias van de más antigua
+        // a más reciente. Los centros sin fecha válida quedan al final.
+        grupos.sort((a, b) => a.fechaMasAntigua - b.fechaMasAntigua ||
+            a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+        const pendientes = grupos.flatMap(grupo => grupo.incidencias);
 
-        return urgentes.concat(especiales, pendientes, finalizadas);
+        const finalizadas = lista.filter(esFinalizada)
+            .sort((a, b) => fechaFin(a) - fechaFin(b) || fechaRegistro(a) - fechaRegistro(b) || a.__i - b.__i);
+
+        return urgentes.concat(especiales, pendientes, finalizadas).map(({ __i, ...inc }) => inc);
     }
 
     function parsearFechaTecnico(valor) {
@@ -3115,6 +3155,11 @@
             return;
         }
 
+        // La tabla puede recibir datos desde la carga inicial o desde los filtros.
+        // Reordenamos aquí también para que ninguna ruta de renderizado pierda
+        // el criterio cronológico de centros e incidencias.
+        datos = ordenarIncidenciasPorPrioridadYFinalizacion(datos);
+
         // V16.7: el orden visual debe ser SIEMPRE:
         // URGENTES → ESPECIALES (otro oficio) → PENDIENTES → COMPLETADAS/FINALIZADAS.
         const estadoNormalizado = inc => String(inc.estado || '').trim().toLowerCase();
@@ -3127,7 +3172,7 @@
         const gruposPendientes = new Map();
         datos.forEach((inc) => {
             if (esPendiente(inc)) {
-                const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
+                const centro = normalizarNombreCentroOrden(inc.colegio);
                 gruposPendientes.set(centro, (gruposPendientes.get(centro) || 0) + 1);
             }
         });
@@ -3171,14 +3216,15 @@
             // Dentro de PENDIENTES mantenemos el agrupamiento por centro.
             if (pendiente) {
                 const centro = String(inc.colegio || 'Centro sin identificar').trim() || 'Centro sin identificar';
-                if (!centrosMostrados.has(centro)) {
-                    centrosMostrados.add(centro);
-                    const totalCentro = gruposPendientes.get(centro) || 1;
+                const claveCentro = normalizarNombreCentroOrden(centro);
+                if (!centrosMostrados.has(claveCentro)) {
+                    centrosMostrados.add(claveCentro);
+                    const totalCentro = gruposPendientes.get(claveCentro) || 1;
                     const trGrupo = document.createElement('tr');
                     trGrupo.innerHTML = `
-                        <td colspan="7" style="padding:10px 12px; background:#f3f4f6; border-top:1px solid #adb5bd; border-bottom:1px solid #ced4da;">
-                            <strong style="color:#343a40;">🏫 ${centro}</strong>
-                            <span style="margin-left:10px; font-size:12px; font-weight:bold; color:#6c757d;">
+                        <td colspan="7" style="padding:11px 14px; background:#eaf0f6; border-top:2px solid #c5d1dd; border-bottom:1px solid #c5d1dd; border-left:4px solid #66829e;">
+                            <strong style="color:#263b50; font-size:14px; letter-spacing:0.1px;">🏫 ${centro}</strong>
+                            <span style="display:inline-block; margin-left:12px; padding:3px 8px; border:1px solid #d5dee7; border-radius:12px; background:#f8fafc; font-size:11px; font-weight:600; color:#526579; vertical-align:1px;">
                                 ${totalCentro} ${totalCentro === 1 ? 'incidencia pendiente' : 'incidencias pendientes'}
                             </span>
                         </td>
@@ -3253,14 +3299,86 @@
                             <div class="acciones-tecnico-titulo">Gestión y cierre</div>
                             ${!finalizada ? `<button type="button" class="btn-accion-tecnico" style="background:#315f8c;" onclick="abrirModalCierreDirecto('${inc.ref}')">🔒 Cerrar incidencia</button>` : ''}
                             ${!finalizada ? `<button type="button" class="btn-accion-tecnico" style="background:#6f42c1;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'OBSERVACION_TECNICA')">💬 Comentarios</button>` : `<button type="button" class="btn-accion-tecnico" style="background:#6f42c1;" onclick="anadirObservacionSeguimiento('${inc.ref}', 'COMENTARIO_FINAL_TECNICO')">💬 Comentario final</button>`}
+                            ${!finalizada && ['ADMIN','TECNICO'].includes(String(usuarioActual.rol || '').trim().toUpperCase()) ? `<button type="button" class="btn-accion-tecnico" style="background:#b7791f;" onclick="cambiarOficioIncidenciaPanel('${inc.ref}', this)">🔄 Cambiar oficio</button>` : ''}
                             ${['ADMIN','TECNICO'].includes(String(usuarioActual.rol || '').trim().toUpperCase()) && ['cerrada','completada','finalizada'].includes(String(inc.estado || '').trim().toLocaleLowerCase('es')) ? `<button type="button" class="btn-accion-tecnico" style="background:#b45309; margin-top:5px;" onclick="corregirCierreYReabrirIncidencia('${inc.ref}')">↩️ Corregir cierre y devolver a incidencias</button>` : ''}
                             ${botonInforme ? botonInforme.replaceAll('btn-accion-tabla','btn-accion-tecnico').replaceAll('background:#2c3e50; color:white;','background:#607080; color:white;').replaceAll('margin-top:5px;','margin-top:5px;') : ''}
+                        </div>
+
+                        <div class="acciones-tecnico-grupo">
+                            <div class="acciones-tecnico-titulo">Comunicación</div>
+                            <button type="button" class="btn-accion-tecnico" style="background:#0b7285;" onclick="enviarCorreoIncidenciaPanel('${inc.ref}', 'EMPRESA', this)">✉️ Correo a empresa</button>
+                            <button type="button" class="btn-accion-tecnico" style="background:#495057;" onclick="enviarCorreoIncidenciaPanel('${inc.ref}', 'TECNICO', this)">✉️ Correo a técnico municipal</button>
                         </div>
                     </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
+    }
+
+
+    async function cambiarOficioIncidenciaPanel(ref, boton) {
+        try {
+            const catalogo = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'listarOficiosDestino',
+                ref: ref,
+                tokenSesion: usuarioActual.tokenSesion
+            }, 20000);
+            if (catalogo.status !== 'SUCCESS' || !Array.isArray(catalogo.oficios) || !catalogo.oficios.length) {
+                throw new Error(catalogo.message || 'No hay oficios con empresa asignada disponibles.');
+            }
+            const oficioActual = catalogo.oficioActual || '';
+            const opciones = catalogo.oficios.filter(o => String(o).toLowerCase() !== String(oficioActual).toLowerCase());
+            if (!opciones.length) throw new Error('No hay otro oficio disponible con empresa asignada.');
+            const listado = opciones.map((o, i) => (i + 1) + '. ' + o).join('\n');
+            const respuesta = prompt('CAMBIAR OFICIO DE ' + ref + '\n\nOficio actual: ' + oficioActual + '\n\nSeleccione el nuevo oficio escribiendo su número:\n\n' + listado);
+            if (respuesta === null) return;
+            const indice = parseInt(respuesta, 10) - 1;
+            if (!Number.isInteger(indice) || indice < 0 || indice >= opciones.length) {
+                alert('Selección no válida. No se ha modificado la incidencia.');
+                return;
+            }
+            const nuevoOficio = opciones[indice];
+            if (!confirm('La incidencia ' + ref + ' pasará al oficio «' + nuevoOficio + '» y a la empresa asignada a ese oficio. ¿Confirmar?')) return;
+            const textoOriginal = boton ? boton.textContent : '';
+            if (boton) { boton.disabled = true; boton.textContent = '⏳ Cambiando...'; }
+            try {
+                const resultado = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                    action: 'cambiarOficioIncidencia',
+                    ref: ref,
+                    nuevoOficio: nuevoOficio,
+                    tokenSesion: usuarioActual.tokenSesion
+                }, 30000);
+                if (resultado.status !== 'SUCCESS') throw new Error(resultado.message || 'No se pudo cambiar el oficio.');
+                alert('✅ ' + resultado.message);
+                if (typeof cargarTablaTecnicoDesdeSheet === 'function') cargarTablaTecnicoDesdeSheet();
+            } finally {
+                if (boton) { boton.disabled = false; boton.textContent = textoOriginal; }
+            }
+        } catch (err) {
+            alert('❌ ' + (err.message || 'Error al cambiar el oficio.'));
+        }
+    }
+
+    async function enviarCorreoIncidenciaPanel(ref, destino, boton) {
+        const nombreDestino = destino === 'EMPRESA' ? 'la empresa asignada' : 'el técnico municipal competente';
+        if (!confirm('¿Enviar directamente desde SIMUN un correo a ' + nombreDestino + ' para la incidencia ' + ref + '?')) return;
+        const textoOriginal = boton ? boton.textContent : '';
+        if (boton) { boton.disabled = true; boton.textContent = '⏳ Enviando...'; }
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, {
+                action: 'enviarCorreoIncidencia',
+                ref: ref,
+                destino: destino,
+                tokenSesion: usuarioActual.tokenSesion
+            }, 30000);
+            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudo enviar el correo.');
+            alert('✅ ' + (respuesta.message || 'Correo enviado correctamente.'));
+        } catch (err) {
+            alert('❌ ' + (err.message || 'Error al enviar el correo.'));
+        } finally {
+            if (boton) { boton.disabled = false; boton.textContent = textoOriginal; }
+        }
     }
 
     function formatearFechaVisible(valor) {
