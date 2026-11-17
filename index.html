@@ -811,7 +811,7 @@
     </div>
 
     <!-- KPIs -->
-    <div class="grid-3" style="margin-bottom: 14px; gap:8px;">
+    <div class="grid-3 grid-kpi-tecnico" style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:14px; gap:8px;">
         <div style="background:#f8f9fa; border-left:4px solid #0d6efd; padding:7px 8px; border-radius:4px; text-align:center;">
             <span style="font-size:10px; color:#666; font-weight:bold;">TOTAL REGISTRADAS</span>
             <div id="kpi-total" style="font-size:18px; font-weight:bold; color:#333;">0</div>
@@ -823,6 +823,19 @@
         <div style="background:#e8f5e9; border-left:4px solid #28a745; padding:7px 8px; border-radius:4px; text-align:center;">
             <span style="font-size:10px; color:#155724; font-weight:bold;">FINALIZADAS / CERRADAS</span>
             <div id="kpi-completadas" style="font-size:18px; font-weight:bold; color:#155724;">0</div>
+        </div>
+        <button type="button" onclick="alternarPanelRechazadas()" aria-controls="lista-rechazadas" aria-expanded="false"
+            style="background:#fff1f1; border:0; border-left:4px solid #dc3545; padding:7px 8px; border-radius:4px; text-align:center; cursor:pointer; color:#842029; font:inherit; min-width:0;">
+            <span style="font-size:10px; color:#842029; font-weight:bold;">INCIDENCIAS RECHAZADAS</span>
+            <div id="contador-rechazadas" style="font-size:18px; font-weight:bold; color:#b02a37;">0</div>
+            <span style="font-size:10px; color:#842029;">Consultar ▾</span>
+        </button>
+    </div>
+
+    <!-- CONSULTA DESPLEGABLE DE INCIDENCIAS RECHAZADAS -->
+    <div id="panel-rechazadas" style="display:none; margin:0 0 14px; border:1px solid #f1c7cb; border-left:4px solid #dc3545; border-radius:6px; background:#fffafa; padding:10px 12px;">
+        <div id="lista-rechazadas" style="display:none;">
+            <div style="font-size:12px; color:#777;">Pulse «Consultar» para cargar las incidencias rechazadas.</div>
         </div>
     </div>
 
@@ -1820,6 +1833,7 @@
     };
 
     let todasLasIncidenciasTecnico = [];
+    let incidenciasRechazadasTecnico = [];
 
     function ejecutarJSONP(urlBase, paramsObj, timeoutMs = 30000) {
         return new Promise((resolve, reject) => {
@@ -2856,17 +2870,59 @@
         try {
             const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, { action: 'listarTodoTecnico', tokenSesion: usuarioActual.tokenSesion });
             if (respuesta.status === "SUCCESS") {
-                todasLasIncidenciasTecnico = ordenarIncidenciasPorPrioridadYFinalizacion(respuesta.data || []);
+                todasLasIncidenciasTecnico = ordenarIncidenciasPorPrioridadYFinalizacion((respuesta.data || []).filter(inc => String(inc.estado || '').trim() !== 'Rechazada por técnico'));
                 actualizarKpis(todasLasIncidenciasTecnico);
                 renderizarTrabajosEnCurso(todasLasIncidenciasTecnico);
                 renderizarTablaTecnico(todasLasIncidenciasTecnico);
                 cargarCambiosRecientes();
+                cargarIncidenciasRechazadasTecnico();
             } else {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#d9251d;">❌ Error al obtener datos.</td></tr>';
             }
         } catch (err) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#d9251d;">❌ Error de conexión al cargar datos.</td></tr>';
         }
+    }
+
+    async function cargarIncidenciasRechazadasTecnico() {
+        const contenedor = document.getElementById('lista-rechazadas');
+        const contador = document.getElementById('contador-rechazadas');
+        if (!contenedor || !usuarioActual || !usuarioActual.tokenSesion) return;
+        try {
+            const respuesta = await ejecutarJSONP(URL_GOOGLE_SCRIPT, { action:'listarRechazadasTecnico', tokenSesion:usuarioActual.tokenSesion }, 20000);
+            if (respuesta.status !== 'SUCCESS') throw new Error(respuesta.message || 'No se pudieron cargar las incidencias rechazadas.');
+            incidenciasRechazadasTecnico = Array.isArray(respuesta.data) ? respuesta.data : [];
+            if (contador) contador.textContent = String(incidenciasRechazadasTecnico.length);
+            if (!incidenciasRechazadasTecnico.length) {
+                contenedor.innerHTML = '<div style="font-size:12px; color:#777; padding:8px 2px;">No hay incidencias rechazadas.</div>';
+                return;
+            }
+            contenedor.innerHTML = incidenciasRechazadasTecnico.map(inc => {
+                const motivo = escaparHtml(String(inc.motivoRechazoTecnico || 'No consta el motivo.'));
+                return '<div style="background:white; border:1px solid #f1c7cb; border-radius:5px; padding:9px 11px; margin-top:7px;">' +
+                    '<div style="font-weight:bold; color:#842029;">' + escaparHtml(inc.ref || '') + ' · ' + escaparHtml(inc.colegio || 'Centro sin identificar') + '</div>' +
+                    '<div style="font-size:12px; color:#495057; margin-top:3px;">Oficio: <strong>' + escaparHtml(inc.oficio || '—') + '</strong> · Fecha: ' + escaparHtml(formatearFechaVisible(inc.fechaRegistro || inc.fecha)) + '</div>' +
+                    '<div style="font-size:12px; color:#842029; margin-top:5px; white-space:pre-line;"><strong>Motivo:</strong> ' + motivo + '</div></div>';
+            }).join('');
+        } catch (err) {
+            contenedor.innerHTML = '<div style="font-size:12px; color:#b02a37; padding:8px 2px;">' + escaparHtml(err.message || 'Error al cargar rechazadas.') + '</div>';
+        }
+    }
+
+    function alternarPanelRechazadas() {
+        const panel = document.getElementById('panel-rechazadas');
+        const contenedor = document.getElementById('lista-rechazadas');
+        if (!panel || !contenedor) return;
+        const visible = panel.style.display !== 'none';
+        panel.style.display = visible ? 'none' : 'block';
+        contenedor.style.display = visible ? 'none' : 'block';
+        const boton = document.querySelector('.grid-kpi-tecnico button[aria-controls="lista-rechazadas"]');
+        if (boton) {
+            boton.setAttribute('aria-expanded', visible ? 'false' : 'true');
+            const indicacion = boton.querySelector('span:last-child');
+            if (indicacion) indicacion.textContent = visible ? 'Consultar ▾' : 'Ocultar ▴';
+        }
+        if (!visible) cargarIncidenciasRechazadasTecnico();
     }
 
     async function cargarHistorialEntidad() {
@@ -3158,7 +3214,7 @@
         // La tabla puede recibir datos desde la carga inicial o desde los filtros.
         // Reordenamos aquí también para que ninguna ruta de renderizado pierda
         // el criterio cronológico de centros e incidencias.
-        datos = ordenarIncidenciasPorPrioridadYFinalizacion(datos);
+        datos = ordenarIncidenciasPorPrioridadYFinalizacion(datos.filter(inc => String(inc.estado || '').trim() !== 'Rechazada por técnico'));
 
         // V16.7: el orden visual debe ser SIEMPRE:
         // URGENTES → ESPECIALES (otro oficio) → PENDIENTES → COMPLETADAS/FINALIZADAS.
@@ -3329,8 +3385,9 @@
             }
             const oficioActual = catalogo.oficioActual || '';
             const opciones = catalogo.oficios.filter(o => String(o).toLowerCase() !== String(oficioActual).toLowerCase());
-            if (!opciones.length) throw new Error('No hay otro oficio disponible con empresa asignada.');
-            const listado = opciones.map((o, i) => (i + 1) + '. ' + o).join('\n');
+            if (!opciones.length) throw new Error('No hay otro oficio disponible.');
+            const sinAsignacion = Array.isArray(catalogo.sinAsignacion) ? catalogo.sinAsignacion : [];
+            const listado = opciones.map((o, i) => (i + 1) + '. ' + o + (sinAsignacion.some(x => String(x).toLowerCase() === String(o).toLowerCase()) ? ' ⚠️ SIN EMPRESA/USUARIO ASIGNADO' : '')).join('\n');
             const respuesta = prompt('CAMBIAR OFICIO DE ' + ref + '\n\nOficio actual: ' + oficioActual + '\n\nSeleccione el nuevo oficio escribiendo su número:\n\n' + listado);
             if (respuesta === null) return;
             const indice = parseInt(respuesta, 10) - 1;
@@ -3339,6 +3396,11 @@
                 return;
             }
             const nuevoOficio = opciones[indice];
+            const destinoSinAsignacion = sinAsignacion.some(x => String(x).toLowerCase() === String(nuevoOficio).toLowerCase());
+            if (destinoSinAsignacion) {
+                alert('El oficio «' + nuevoOficio + '» todavía no tiene empresa ni usuario asignado en la hoja Asignaciones. No se ha modificado la incidencia. Primero debe configurarse su responsable.');
+                return;
+            }
             if (!confirm('La incidencia ' + ref + ' pasará al oficio «' + nuevoOficio + '» y a la empresa asignada a ese oficio. ¿Confirmar?')) return;
             const textoOriginal = boton ? boton.textContent : '';
             if (boton) { boton.disabled = true; boton.textContent = '⏳ Cambiando...'; }
@@ -3947,7 +4009,12 @@ async function solicitarInspeccionTecnicaUI(ref, motivoInicial){
                     .obs-box { background: #fafafa; border: 1px solid #eee; padding: 12px; border-radius: 4px; font-size: 13px; }
                     .footer-pdf { margin-top: 40px; text-align: center; font-size: 11px; color: #777; border-top: 1px solid #ddd; padding-top: 15px; }
                 </style>
-            </head>
+            <style>
+.grid-kpi-tecnico { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 900px) { .grid-kpi-tecnico { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+@media (max-width: 520px) { .grid-kpi-tecnico { grid-template-columns: 1fr !important; } }
+</style>
+</head>
             <body>
                 <div class="header-pdf">
                     <div class="header-pdf-brand">
